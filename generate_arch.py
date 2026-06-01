@@ -1,191 +1,237 @@
 """
-Generates the NetGuard AI architecture diagram as architecture.png
-Run: python generate_arch.py
+Generates architecture.png — run: python generate_arch.py
 """
-
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+from matplotlib.patches import FancyBboxPatch
+import matplotlib.patheffects as pe
+import numpy as np
 
-fig, ax = plt.subplots(figsize=(16, 12))
-ax.set_xlim(0, 16)
-ax.set_ylim(0, 12)
+W, H = 22, 15
+fig, ax = plt.subplots(figsize=(W, H))
+ax.set_xlim(0, W)
+ax.set_ylim(0, H)
 ax.axis("off")
-fig.patch.set_facecolor("#0f1117")
-ax.set_facecolor("#0f1117")
+fig.patch.set_facecolor("#0d1117")
+ax.set_facecolor("#0d1117")
 
-# ── colour palette ───────────────────────────────────────────────────────────
-C_BROWSER   = "#1a1f2e"
-C_FASTAPI   = "#1a2a1f"
-C_SERVICE   = "#1a1f2a"
-C_DATA      = "#2a1a1f"
-C_AI        = "#1f1a2a"
-C_BORDER_B  = "#00d9ff"
-C_BORDER_G  = "#00ff88"
-C_BORDER_S  = "#7b68ee"
-C_BORDER_D  = "#ff6b6b"
-C_BORDER_AI = "#c792ea"
-C_TEXT      = "#e8eaf0"
-C_SUBTEXT   = "#9aa0b4"
-C_ARROW     = "#4a5568"
-C_BADGE     = "#2d3748"
+# ── helpers ──────────────────────────────────────────────────────────────────
+def rbox(x, y, w, h, fc, ec, lw=2.0, alpha=1.0, radius=0.3, zorder=3):
+    p = FancyBboxPatch((x, y), w, h,
+                       boxstyle=f"round,pad=0,rounding_size={radius}",
+                       facecolor=fc, edgecolor=ec, linewidth=lw,
+                       alpha=alpha, zorder=zorder)
+    ax.add_patch(p)
 
-def box(ax, x, y, w, h, fc, ec, lw=1.5, radius=0.25):
-    patch = FancyBboxPatch((x, y), w, h,
-                           boxstyle=f"round,pad=0,rounding_size={radius}",
-                           facecolor=fc, edgecolor=ec, linewidth=lw, zorder=3)
-    ax.add_patch(patch)
+def txt(x, y, s, size=11, color="#e6edf3", weight="normal",
+        ha="center", va="center", zorder=6, alpha=1.0):
+    ax.text(x, y, s, fontsize=size, color=color, fontweight=weight,
+            ha=ha, va=va, zorder=zorder, alpha=alpha,
+            fontfamily="DejaVu Sans")
 
-def label(ax, x, y, text, size=9, color=C_TEXT, weight="normal", ha="center", va="center"):
-    ax.text(x, y, text, fontsize=size, color=color, fontweight=weight,
-            ha=ha, va=va, zorder=4, fontfamily="monospace")
+def pill(x, y, s, fc, tc="#ffffff", size=8.5, zorder=7):
+    ax.text(x, y, s, fontsize=size, color=tc, fontweight="bold",
+            ha="center", va="center", zorder=zorder,
+            bbox=dict(boxstyle="round,pad=0.35", facecolor=fc,
+                      edgecolor="none", alpha=0.9))
 
-def arrow(ax, x1, y1, x2, y2, color=C_ARROW):
-    ax.annotate("", xy=(x2, y2), xytext=(x1, y1),
-                arrowprops=dict(arrowstyle="-|>", color=color, lw=1.5,
-                                mutation_scale=12), zorder=2)
+def arrow_v(x, y1, y2, color="#4b5563", lw=1.8):
+    ax.annotate("", xy=(x, y2), xytext=(x, y1),
+                arrowprops=dict(arrowstyle="-|>", color=color,
+                                lw=lw, mutation_scale=14),
+                zorder=2)
 
-def badge(ax, x, y, text, fc, tc="#ffffff"):
-    ax.text(x, y, f" {text} ", fontsize=7, color=tc, fontweight="bold",
-            ha="center", va="center", zorder=5,
-            bbox=dict(boxstyle="round,pad=0.2", facecolor=fc, edgecolor="none"))
+def arrow_h(x1, x2, y, color="#4b5563", lw=1.8):
+    ax.annotate("", xy=(x2, y), xytext=(x1, y),
+                arrowprops=dict(arrowstyle="-|>", color=color,
+                                lw=lw, mutation_scale=14),
+                zorder=2)
 
-# ── title ────────────────────────────────────────────────────────────────────
-ax.text(8, 11.5, "NetGuard AI  —  System Architecture",
-        fontsize=15, color=C_TEXT, fontweight="bold", ha="center", va="center",
-        fontfamily="monospace", zorder=4)
-ax.text(8, 11.1, "Markov Chain Failure Prediction · GPT-4o-mini AI Chat · Monte Carlo Validation",
-        fontsize=8, color=C_SUBTEXT, ha="center", va="center", fontfamily="monospace", zorder=4)
+def divider(x, y, w, color="#2d333b"):
+    ax.plot([x, x + w], [y, y], color=color, lw=1, zorder=4)
 
 # ═══════════════════════════════════════════════════════════════════════════
-# LAYER 1 — Browser
+# TITLE
 # ═══════════════════════════════════════════════════════════════════════════
-box(ax, 4.5, 9.8, 7, 1.0, C_BROWSER, C_BORDER_B, lw=2)
-label(ax, 6.2, 10.55, "Browser / Client", size=10, weight="bold", color=C_BORDER_B)
-label(ax, 6.2, 10.15, "Chart.js · Vanilla JS · dashboard.html", size=8, color=C_SUBTEXT)
-badge(ax, 10.2, 10.55, "http://your-ip:3721", "#1d4ed8")
-badge(ax, 10.2, 10.15, "Single-page app", "#374151")
+txt(W / 2, H - 0.5, "NetGuard AI — System Architecture",
+    size=20, color="#e6edf3", weight="bold")
+txt(W / 2, H - 1.0,
+    "Markov Chain Failure Prediction  ·  GPT-4o-mini AI Chat  ·  Monte Carlo Validation",
+    size=10, color="#8b949e", alpha=0.85)
 
 # ═══════════════════════════════════════════════════════════════════════════
-# LAYER 2 — FastAPI
+# ROW 1 — Browser (full width)
 # ═══════════════════════════════════════════════════════════════════════════
-box(ax, 1.0, 7.8, 14, 1.6, C_FASTAPI, C_BORDER_G, lw=2)
-label(ax, 8, 9.15, "FastAPI Application  ·  backend/main.py  ·  Port 3721", size=9.5, weight="bold", color=C_BORDER_G)
+BX, BY, BW, BH = 1.2, 11.8, W - 2.4, 1.5
+rbox(BX, BY, BW, BH, "#161b22", "#58a6ff", lw=2.2)
+txt(BX + 0.5, BY + 1.0, "Browser / Client", size=13, color="#58a6ff",
+    weight="bold", ha="left")
+txt(BX + 0.5, BY + 0.55, "Vanilla JS  ·  Chart.js 4  ·  dashboard.html  ·  Single-page app",
+    size=9.5, color="#8b949e", ha="left")
+pill(BX + BW - 2.0, BY + 0.95, "http://your-ip:3721", "#1d4ed8", size=9)
+pill(BX + BW - 2.0, BY + 0.48, "Port 3721", "#374151", size=8.5)
 
-# Three API columns inside FastAPI box
-for i, (cx, title, routes, color) in enumerate([
-    (3.2,  "analytics.py",  "GET /api/*\n10 read-only routes\nPre-computed data\n+ dashboard HTML", "#4ade80"),
-    (8.0,  "ai.py",         "POST /api/ai/chat\n\nLLM chat with\nlive context", "#60a5fa"),
-    (12.8, "analysis.py",   "POST /api/analyze/\ncustom-matrix\nPOST /api/upload/\ntelemetry", "#f472b6"),
-]):
-    box(ax, cx - 1.6, 7.95, 3.2, 1.05, "#0d1117", color, lw=1.2, radius=0.15)
-    label(ax, cx, 8.75, title, size=8.5, weight="bold", color=color)
-    for j, line in enumerate(routes.split("\n")):
-        label(ax, cx, 8.48 - j * 0.155, line, size=7, color=C_SUBTEXT)
+# ── arrow down ────────────────────────────────────────────────────────────
+arrow_v(W / 2, BY, BY - 0.25, color="#58a6ff")
+txt(W / 2 + 0.35, BY - 0.12, "HTTP", size=8, color="#8b949e", ha="left")
 
 # ═══════════════════════════════════════════════════════════════════════════
-# LAYER 3 — Services
+# ROW 2 — FastAPI (full width, with 3 sub-boxes)
 # ═══════════════════════════════════════════════════════════════════════════
-box(ax, 1.0, 5.4, 14, 2.0, C_SERVICE, C_BORDER_S, lw=2)
-label(ax, 8, 7.15, "Service Layer  ·  backend/services/", size=9.5, weight="bold", color=C_BORDER_S)
+FX, FY, FW, FH = 1.2, 9.0, W - 2.4, 2.55
+rbox(FX, FY, FW, FH, "#0f1e14", "#3fb950", lw=2.2)
+txt(FX + FW / 2, FY + FH - 0.38,
+    "FastAPI Application  ·  backend/main.py  ·  Port 3721",
+    size=12, color="#3fb950", weight="bold")
 
-for cx, title, lines, color in [
-    (3.2,  "data.py",
-     ["Loads all CSVs once", "at startup", "Shared DataFrames", "+ helper functions"],
-     "#a78bfa"),
-    (8.0,  "markov.py",
-     ["compute_failure_curves()", "compute_mttf()", "estimate_transition_matrix()", "validate_matrix()"],
-     "#818cf8"),
-    (12.8, "ai_service.py",
-     ["AzureOpenAI client", "build_network_context()", "chat(messages)", "Live snapshot injection"],
-     "#c084fc"),
-]:
-    box(ax, cx - 1.6, 5.55, 3.2, 1.45, "#0d1117", color, lw=1.2, radius=0.15)
-    label(ax, cx, 6.73, title, size=8.5, weight="bold", color=color)
+# Three API boxes
+api_data = [
+    ("analytics.py",  "#238636", "#56d364",
+     ["GET /api/*", "10 read-only routes", "Pre-computed data", "Serves dashboard HTML"]),
+    ("ai.py",         "#1d3a5c", "#79c0ff",
+     ["POST /api/ai/chat", "", "GPT-4o-mini chat", "with live context"]),
+    ("analysis.py",   "#3a1d4a", "#d2a8ff",
+     ["POST /api/analyze/", "custom-matrix", "POST /api/upload/", "telemetry"]),
+]
+api_w, api_gap = 5.6, 0.7
+api_start = FX + (FW - 3 * api_w - 2 * api_gap) / 2
+for i, (name, fc, ec, lines) in enumerate(api_data):
+    ax_box = api_start + i * (api_w + api_gap)
+    ay_box = FY + 0.22
+    rbox(ax_box, ay_box, api_w, 1.75, fc, ec, lw=1.6, radius=0.2)
+    txt(ax_box + api_w / 2, ay_box + 1.46, name, size=10.5, color=ec,
+        weight="bold")
+    divider(ax_box + 0.25, ay_box + 1.28, api_w - 0.5, color=ec)
     for j, line in enumerate(lines):
-        label(ax, cx, 6.48 - j * 0.18, line, size=7, color=C_SUBTEXT)
+        txt(ax_box + api_w / 2, ay_box + 1.05 - j * 0.24,
+            line, size=8.5, color="#8b949e")
+
+# ── arrows down ───────────────────────────────────────────────────────────
+for i in range(3):
+    cx = api_start + i * (api_w + api_gap) + api_w / 2
+    arrow_v(cx, FY, FY - 0.25, color="#3fb950")
 
 # ═══════════════════════════════════════════════════════════════════════════
-# LAYER 4 — Data + Azure (side by side)
+# ROW 3 — Services (full width, 3 sub-boxes)
+# ═══════════════════════════════════════════════════════════════════════════
+SX, SY, SW, SH = 1.2, 6.1, W - 2.4, 2.65
+rbox(SX, SY, SW, SH, "#161022", "#8957e5", lw=2.2)
+txt(SX + SW / 2, SY + SH - 0.38,
+    "Service Layer  ·  backend/services/",
+    size=12, color="#8957e5", weight="bold")
+
+svc_data = [
+    ("data.py",        "#1f1535", "#a371f7",
+     ["Loads all 5 CSVs at startup", "dashboard_df · mttf_df · corr_df",
+      "transition_df · mc_df", "rf() · valid_mttf() · is_high_risk()"]),
+    ("markov.py",      "#132236", "#79c0ff",
+     ["compute_failure_curves()", "compute_mttf()  →  N=(I−Q)⁻¹",
+      "estimate_transition_matrix()", "validate_matrix()"]),
+    ("ai_service.py",  "#241535", "#c792ea",
+     ["AzureOpenAI client (singleton)", "build_network_context()",
+      "chat(messages: List[dict])", "Live snapshot → system prompt"]),
+]
+svc_w, svc_gap = 5.6, 0.7
+svc_start = SX + (SW - 3 * svc_w - 2 * svc_gap) / 2
+for i, (name, fc, ec, lines) in enumerate(svc_data):
+    sx_box = svc_start + i * (svc_w + svc_gap)
+    sy_box = SY + 0.22
+    rbox(sx_box, sy_box, svc_w, 1.88, fc, ec, lw=1.6, radius=0.2)
+    txt(sx_box + svc_w / 2, sy_box + 1.6, name, size=10.5, color=ec, weight="bold")
+    divider(sx_box + 0.25, sy_box + 1.42, svc_w - 0.5, color=ec)
+    for j, line in enumerate(lines):
+        txt(sx_box + svc_w / 2, sy_box + 1.2 - j * 0.27,
+            line, size=8.5, color="#8b949e")
+
+# ── arrows down ───────────────────────────────────────────────────────────
+arrow_v(svc_start + svc_w / 2, SY, SY - 0.25, color="#8957e5")
+arrow_v(svc_start + svc_w / 2 + svc_w + svc_gap, SY, SY - 0.25, color="#8957e5")
+arrow_v(svc_start + 2 * (svc_w + svc_gap) + svc_w / 2, SY, SY - 0.25, color="#8957e5")
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ROW 4 — Data + Azure (side by side)
 # ═══════════════════════════════════════════════════════════════════════════
 # Data box
-box(ax, 1.0, 2.5, 8.5, 2.5, C_DATA, C_BORDER_D, lw=2)
-label(ax, 5.25, 4.75, "Data Layer  ·  data/", size=9.5, weight="bold", color=C_BORDER_D)
+DX, DY, DW, DH = 1.2, 3.0, 11.8, 2.85
+rbox(DX, DY, DW, DH, "#1c0f0f", "#f85149", lw=2.2)
+txt(DX + DW / 2, DY + DH - 0.4, "Data Layer  ·  data/",
+    size=12, color="#f85149", weight="bold")
+divider(DX + 0.3, DY + DH - 0.72, DW - 0.6, color="#f85149")
 
-for row, text in enumerate([
-    ("data/raw/",      "failures.xlsx · network_elements.xlsx"),
-    ("",               "telemetry.xlsx · transition_profiles.xlsx"),
-    ("data/results/",  "network_risk_dashboard.csv · element_mttf_analysis.csv"),
-    ("",               "estimated_transition_matrix.csv · kpi_correlation_matrix.csv"),
-    ("",               "monte_carlo_results.csv · failure_probabilities.csv"),
-]):
-    folder, files = text
-    y = 4.42 - row * 0.33
-    if folder:
-        label(ax, 2.2, y, folder, size=7.5, weight="bold", color=C_BORDER_D, ha="left")
-    label(ax, 4.6, y, files, size=7, color=C_SUBTEXT, ha="left")
+# raw folder
+txt(DX + 0.5, DY + 2.0, "data/raw/", size=9.5, color="#f85149",
+    weight="bold", ha="left")
+for j, f in enumerate(["failures.xlsx", "network_elements.xlsx",
+                        "telemetry.xlsx", "transition_profiles.xlsx"]):
+    txt(DX + 0.7, DY + 1.68 - j * 0.28, f"▸  {f}", size=8.5,
+        color="#8b949e", ha="left")
+
+# results folder
+txt(DX + 6.3, DY + 2.0, "data/results/", size=9.5, color="#f85149",
+    weight="bold", ha="left")
+for j, f in enumerate(["network_risk_dashboard.csv",
+                        "element_mttf_analysis.csv",
+                        "estimated_transition_matrix.csv",
+                        "kpi_correlation_matrix.csv",
+                        "monte_carlo_results.csv"]):
+    txt(DX + 6.5, DY + 1.68 - j * 0.28, f"▸  {f}", size=8.5,
+        color="#8b949e", ha="left")
 
 # Azure box
-box(ax, 10.0, 2.5, 5.0, 2.5, C_AI, C_BORDER_AI, lw=2)
-label(ax, 12.5, 4.75, "Azure OpenAI", size=9.5, weight="bold", color=C_BORDER_AI)
-for row, line in enumerate([
-    "Model: GPT-4o-mini",
-    "Network snapshot built",
-    "fresh on every request",
+AX, AY, AW, AH = 13.4, 3.0, 7.4, 2.85
+rbox(AX, AY, AW, AH, "#160f22", "#c792ea", lw=2.2)
+txt(AX + AW / 2, AY + AH - 0.4, "Azure OpenAI",
+    size=12, color="#c792ea", weight="bold")
+divider(AX + 0.3, AY + AH - 0.72, AW - 0.6, color="#c792ea")
+pill(AX + AW / 2, AY + 1.92, "Model: GPT-4o-mini", "#4c1d95", tc="#c792ea", size=9)
+for j, line in enumerate([
+    "Network snapshot built on every request",
     "Injected as system prompt",
-    "Grounded in real data",
+    "Answers grounded in live network data",
+    "NOC-operator friendly plain English",
 ]):
-    label(ax, 12.5, 4.42 - row * 0.33, line, size=7.5, color=C_SUBTEXT)
+    txt(AX + AW / 2, AY + 1.52 - j * 0.30, line, size=8.5, color="#8b949e")
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Schemas box (bottom)
+# ROW 5 — Schemas (bottom strip)
 # ═══════════════════════════════════════════════════════════════════════════
-box(ax, 1.0, 0.5, 14, 1.65, "#111827", "#4b5563", lw=1.2)
-label(ax, 8, 1.9, "Schemas  ·  backend/schemas/requests.py", size=8.5, weight="bold", color="#9ca3af")
-label(ax, 4.0,  1.5, "ChatMessage  { role: str, content: str }", size=7.5, color=C_SUBTEXT)
-label(ax, 4.0,  1.2, "ChatRequest  { messages: List[ChatMessage] }", size=7.5, color=C_SUBTEXT)
-label(ax, 11.5, 1.5, "MatrixRequest", size=7.5, color=C_SUBTEXT)
-label(ax, 11.5, 1.2, "{ states: List[str], matrix: List[List[float]] }", size=7.5, color=C_SUBTEXT)
+SCX, SCY, SCW, SCH = 1.2, 1.1, W - 2.4, 1.6
+rbox(SCX, SCY, SCW, SCH, "#161b22", "#30363d", lw=1.6)
+txt(SCX + SCW / 2, SCY + SCH - 0.32,
+    "Schemas  ·  backend/schemas/requests.py",
+    size=10.5, color="#8b949e", weight="bold")
+divider(SCX + 0.3, SCY + SCH - 0.58, SCW - 0.6, color="#30363d")
 
-# ═══════════════════════════════════════════════════════════════════════════
-# Arrows between layers
-# ═══════════════════════════════════════════════════════════════════════════
-# Browser → FastAPI
-arrow(ax, 8, 9.8, 8, 9.4, color=C_BORDER_B)
-ax.text(8.15, 9.62, "HTTP", fontsize=7, color=C_SUBTEXT, zorder=4, fontfamily="monospace")
-
-# FastAPI → Services
-arrow(ax, 3.2, 7.95, 3.2, 7.4, color=C_BORDER_G)
-arrow(ax, 8.0, 7.95, 8.0, 7.4, color=C_BORDER_G)
-arrow(ax, 12.8, 7.95, 12.8, 7.4, color=C_BORDER_G)
-
-# Services → Data/Azure
-arrow(ax, 3.2, 5.55, 3.2, 5.0, color=C_BORDER_S)
-arrow(ax, 8.0, 5.55, 5.5, 5.0, color=C_BORDER_S)
-arrow(ax, 12.8, 5.55, 12.5, 5.0, color=C_BORDER_S)
-
-# Services/Data → Schemas
-arrow(ax, 5.0, 2.5, 5.0, 2.15, color="#4b5563")
-arrow(ax, 11.5, 2.5, 11.5, 2.15, color="#4b5563")
+schema_items = [
+    ("ChatMessage",   "{ role: str,  content: str }"),
+    ("ChatRequest",   "{ messages: List[ChatMessage] }"),
+    ("MatrixRequest", "{ states: List[str],  matrix: List[List[float]] }"),
+]
+for i, (name, body) in enumerate(schema_items):
+    x0 = SCX + 0.8 + i * (SCW / 3)
+    txt(x0, SCY + 0.78, name, size=9.5, color="#79c0ff", weight="bold", ha="left")
+    txt(x0, SCY + 0.42, body, size=8.0, color="#8b949e", ha="left")
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Tech-stack badges along the bottom edge
+# TECH STACK BADGES (very bottom)
 # ═══════════════════════════════════════════════════════════════════════════
-for bx, text, color in [
-    (1.5,  "Python 3.11+",    "#3b7bc8"),
-    (3.3,  "FastAPI",         "#009688"),
-    (5.1,  "NumPy",           "#013243"),
-    (6.9,  "Pandas",          "#150458"),
-    (8.7,  "Azure OpenAI",    "#0078d4"),
-    (10.5, "Chart.js",        "#ff6384"),
-    (12.3, "Uvicorn",         "#2f9560"),
-    (14.1, "python-dotenv",   "#555555"),
-]:
-    badge(ax, bx, 0.22, text, color)
+badges = [
+    ("Python 3.11+", "#3b7bc8"), ("FastAPI", "#009688"),
+    ("NumPy", "#013243"),        ("Pandas", "#150458"),
+    ("Azure OpenAI", "#0078d4"), ("Chart.js", "#ff6384"),
+    ("Uvicorn", "#2f9560"),      ("python-dotenv", "#555"),
+]
+total_w = len(badges) * 2.3
+start_x = (W - total_w) / 2 + 1.15
+for i, (name, fc) in enumerate(badges):
+    pill(start_x + i * 2.3, 0.55, name, fc, size=8)
 
+# ═══════════════════════════════════════════════════════════════════════════
+# Save
+# ═══════════════════════════════════════════════════════════════════════════
 plt.tight_layout(pad=0)
 out = "/home/support/zee_workspace/zee/health_device/architecture.png"
-plt.savefig(out, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+plt.savefig(out, dpi=160, bbox_inches="tight", facecolor="#0d1117")
 print(f"Saved → {out}")
