@@ -1,0 +1,11 @@
+state,hours,failure_probability
+Healthy,1,0.02
+Healthy,6,0.1375
+Healthy,24,0.5061
+Healthy,168,0.9948
+Warning,6,0.1716
+Warning,24,0.5356
+Minor,6,0.2437
+Minor,24,0.5848
+Major,1,0.1612
+Major,6,0.4264

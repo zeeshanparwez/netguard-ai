@@ -1,0 +1,3 @@
+method,failure_prob_168h,mean_time_to_failure_hours,median_time_to_failure_hours,failures_observed
+Monte Carlo (5000 sims),0.9932,32.63,24.0,4966
+Analytical (Markov),0.9948,33.68,-,-

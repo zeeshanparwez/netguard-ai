@@ -1,0 +1,2204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NetGuard AI — Network Intelligence Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #050d1a;
+      --bg2: #081422;
+      --card: #0c1a2e;
+      --card2: #0f2040;
+      --border: rgba(0, 180, 255, 0.18);
+      --border-h: rgba(0, 212, 255, 0.5);
+      --cyan: #00d4ff;
+      --blue: #1a6fff;
+      --txt: #e0f0ff;
+      --txt2: #7ab3d8;
+      --txt3: #3d6a8f;
+      --critical: #ff2244;
+      --high: #ff6b35;
+      --medium: #ffb347;
+      --low: #4ec9ff;
+      --normal: #2ecc71;
+      --healthy: #2ecc71;
+      --warning: #f39c12;
+      --minor: #e67e22;
+      --major: #e74c3c;
+      --failure: #c0392b;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, #040d1e 0%, #071a3a 50%, #04111f 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+    }
+    .header-brand { display: flex; align-items: center; gap: 14px; }
+    .header-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #00d4ff, #0066ff);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .header-title { font-size: 22px; font-weight: 700; color: var(--txt); }
+    .header-sub { font-size: 11px; color: var(--txt2); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px; }
+    .header-right { display: flex; align-items: center; gap: 20px; }
+    .header-badge {
+      background: rgba(0, 212, 255, 0.12);
+      border: 1px solid rgba(0, 212, 255, 0.4);
+      color: var(--cyan);
+      font-size: 11px; font-weight: 600;
+      padding: 5px 12px; border-radius: 20px;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .live-dot {
+      display: inline-block; width: 7px; height: 7px;
+      background: #2ecc71; border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .header-clock { font-size: 13px; color: var(--txt2); font-variant-numeric: tabular-nums; }
+
+    .header-meta-bar {
+      background: rgba(0,0,0,0.3);
+      border-top: 1px solid var(--border);
+      padding: 8px 32px;
+      display: flex; gap: 32px; align-items: center;
+    }
+    .meta-item { font-size: 11px; color: var(--txt3); }
+    .meta-item span { color: var(--txt2); font-weight: 500; }
+
+    /* ── LAYOUT ── */
+    main { padding: 28px 32px; max-width: 1920px; margin: 0 auto; }
+    section { margin-bottom: 28px; }
+    .section-title {
+      font-size: 11px; font-weight: 600; color: var(--txt2);
+      text-transform: uppercase; letter-spacing: 1.5px;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .section-title::before {
+      content: ''; display: inline-block; width: 3px; height: 14px;
+      background: var(--cyan); border-radius: 2px;
+    }
+
+    /* ── KPI CARDS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+    }
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .kpi-card:hover { transform: translateY(-2px); border-color: var(--border-h); }
+    .kpi-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: 12px 12px 0 0;
+    }
+    .kpi-card.cyan::before { background: var(--cyan); }
+    .kpi-card.red::before { background: var(--critical); }
+    .kpi-card.orange::before { background: var(--high); }
+    .kpi-card.blue::before { background: var(--blue); }
+    .kpi-card.amber::before { background: var(--medium); }
+    .kpi-card.green::before { background: var(--normal); }
+
+    .kpi-label { font-size: 11px; color: var(--txt2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .kpi-value { font-size: 32px; font-weight: 800; line-height: 1; }
+    .kpi-value.cyan { color: var(--cyan); }
+    .kpi-value.red { color: var(--critical); }
+    .kpi-value.orange { color: var(--high); }
+    .kpi-value.blue { color: #5ba4ff; }
+    .kpi-value.amber { color: var(--medium); }
+    .kpi-value.green { color: var(--normal); }
+    .kpi-unit { font-size: 14px; font-weight: 400; color: var(--txt2); margin-left: 2px; }
+    .kpi-sub { font-size: 11px; color: var(--txt3); margin-top: 6px; }
+    .kpi-icon {
+      position: absolute; right: 16px; top: 16px;
+      font-size: 26px; opacity: 0.15;
+    }
+
+    /* ── CHARTS GRID ── */
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-1 { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: rgba(0, 212, 255, 0.3); }
+    .card-title {
+      font-size: 13px; font-weight: 600; color: var(--txt);
+      margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
+    }
+    .card-desc { font-size: 11px; color: var(--txt3); margin-bottom: 16px; }
+    .chart-wrap { position: relative; }
+
+    /* ── HEATMAP ── */
+    .heatmap-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .heatmap-table th {
+      color: var(--txt2); font-weight: 500; font-size: 10px;
+      padding: 6px 4px; text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px;
+    }
+    .heatmap-table td {
+      width: 60px; height: 38px;
+      text-align: center; vertical-align: middle;
+      border-radius: 4px; font-weight: 600; font-size: 10px;
+      transition: opacity 0.2s;
+      cursor: default;
+    }
+    .heatmap-table td:hover { opacity: 0.8; outline: 2px solid var(--cyan); }
+    .row-label {
+      color: var(--txt2); font-weight: 500; font-size: 10px;
+      padding: 0 8px 0 0; text-align: right; white-space: nowrap;
+    }
+
+    /* ── RISK BADGE ── */
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    }
+    .badge.CRITICAL { background: rgba(255,34,68,0.2); color: #ff4466; border: 1px solid rgba(255,34,68,0.4); }
+    .badge.HIGH { background: rgba(255,107,53,0.2); color: #ff8055; border: 1px solid rgba(255,107,53,0.4); }
+    .badge.MEDIUM { background: rgba(255,179,71,0.2); color: #ffb347; border: 1px solid rgba(255,179,71,0.4); }
+    .badge.LOW { background: rgba(78,201,255,0.15); color: #4ec9ff; border: 1px solid rgba(78,201,255,0.3); }
+    .badge.NORMAL { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+
+    .state-dot {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 500;
+    }
+    .state-dot::before {
+      content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    }
+    .state-dot.Healthy::before { background: var(--healthy); }
+    .state-dot.Warning::before { background: var(--warning); }
+    .state-dot.Minor::before { background: var(--minor); }
+    .state-dot.Major::before { background: var(--major); }
+    .state-dot.Failure::before { background: var(--failure); }
+
+    /* ── TABLE ── */
+    .table-controls {
+      display: flex; gap: 12px; align-items: center; margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .ctrl-input, .ctrl-select {
+      background: var(--bg2); border: 1px solid var(--border);
+      color: var(--txt); padding: 7px 12px; border-radius: 8px;
+      font-size: 12px; font-family: 'Inter', sans-serif;
+      outline: none; transition: border-color 0.2s;
+    }
+    .ctrl-input:focus, .ctrl-select:focus { border-color: var(--cyan); }
+    .ctrl-input { width: 180px; }
+    .ctrl-select option { background: #0c1a2e; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .data-table thead th {
+      background: rgba(0,212,255,0.06); color: var(--txt2);
+      font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase;
+      padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border);
+      cursor: pointer; user-select: none; white-space: nowrap;
+    }
+    .data-table thead th:hover { color: var(--cyan); }
+    .data-table tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+    }
+    .data-table tbody tr:hover { background: rgba(0,212,255,0.04); }
+    .data-table tbody td { padding: 10px 12px; color: var(--txt); white-space: nowrap; }
+
+    .prob-bar-wrap { display: flex; align-items: center; gap: 6px; }
+    .prob-bar {
+      height: 5px; border-radius: 3px;
+      background: linear-gradient(90deg, #2ecc71, #f39c12, #e74c3c);
+      min-width: 4px;
+    }
+    .prob-val { font-size: 11px; color: var(--txt2); }
+
+    .pagination { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+    .page-btn {
+      background: var(--bg2); border: 1px solid var(--border);
+      color: var(--txt2); padding: 6px 14px; border-radius: 6px;
+      font-size: 12px; cursor: pointer; transition: all 0.2s;
+    }
+    .page-btn:hover, .page-btn.active { background: var(--cyan); color: #000; border-color: var(--cyan); }
+    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .page-info { font-size: 11px; color: var(--txt3); }
+
+    /* ── MC VALIDATION ── */
+    .mc-compare {
+      display: flex; gap: 20px;
+    }
+    .mc-box {
+      flex: 1; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px; text-align: center;
+    }
+    .mc-box .mc-method { font-size: 10px; color: var(--txt3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .mc-box .mc-prob { font-size: 28px; font-weight: 800; }
+    .mc-box .mc-sub { font-size: 11px; color: var(--txt3); margin-top: 4px; }
+    .mc-box.analytical .mc-prob { color: var(--cyan); }
+    .mc-box.montecarlo .mc-prob { color: #a78bfa; }
+
+    .match-indicator {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 10px;
+    }
+    .match-pct { font-size: 22px; font-weight: 800; color: var(--normal); }
+    .match-label { font-size: 10px; color: var(--txt3); text-align: center; }
+
+    /* ── INSIGHT PILLS ── */
+    .insights { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .insight-pill {
+      background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+      color: var(--txt2); font-size: 11px; padding: 5px 12px; border-radius: 20px;
+    }
+    .insight-pill strong { color: var(--cyan); }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: 40px;
+      border-top: 1px solid var(--border);
+      padding: 24px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(0,0,0,0.3);
+    }
+    .footer-brand { font-size: 13px; font-weight: 600; color: var(--txt2); }
+    .footer-meta { font-size: 11px; color: var(--txt3); text-align: right; }
+    .footer-tags { display: flex; gap: 8px; margin-top: 6px; }
+    .footer-tag {
+      background: var(--bg2); border: 1px solid var(--border);
+      color: var(--txt3); font-size: 10px; padding: 3px 9px; border-radius: 20px;
+    }
+
+    /* ── LOADING ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--card) 25%, var(--card2) 50%, var(--card) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    .fade-in { animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── HERO SECTION ── */
+    .hero-section {
+      background: linear-gradient(135deg, #04091a 0%, #071428 45%, #04091a 100%);
+      border: 1px solid rgba(0,212,255,0.25);
+      border-radius: 18px;
+      padding: 48px 48px 40px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-section::before {
+      content: '';
+      position: absolute; top: -60%; left: -10%;
+      width: 60%; height: 200%;
+      background: radial-gradient(ellipse, rgba(0,212,255,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero-section::after {
+      content: '';
+      position: absolute; bottom: -40%; right: -5%;
+      width: 40%; height: 120%;
+      background: radial-gradient(ellipse, rgba(100,60,255,0.05) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; position: relative; z-index: 1; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3);
+      color: var(--cyan); font-size: 11px; font-weight: 600;
+      padding: 5px 14px; border-radius: 20px; letter-spacing: 1px;
+      text-transform: uppercase; margin-bottom: 18px;
+    }
+    .hero-headline {
+      font-size: 38px; font-weight: 800; line-height: 1.15;
+      background: linear-gradient(100deg, #ffffff 0%, #a0d4ff 60%, #00d4ff 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .hero-desc {
+      font-size: 15px; color: #8ab4d4; line-height: 1.7; margin-bottom: 24px;
+    }
+    .hero-desc strong { color: #e0f0ff; }
+    .hero-bullets { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .hero-bullets li {
+      font-size: 13px; color: #7ab3d8;
+      display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+      background: rgba(255,255,255,0.03); border-radius: 8px;
+      border-left: 2px solid rgba(0,212,255,0.3);
+    }
+    .hero-metrics-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px;
+    }
+    .hero-metric-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 18px 20px;
+      text-align: center; transition: border-color 0.2s;
+    }
+    .hero-metric-box:hover { border-color: rgba(0,212,255,0.3); }
+    .hero-metric-box.danger { border-color: rgba(255,34,68,0.3); background: rgba(255,34,68,0.05); }
+    .hero-metric-box.success { border-color: rgba(46,204,113,0.3); background: rgba(46,204,113,0.05); }
+    .hero-metric-num { font-size: 36px; font-weight: 800; line-height: 1; }
+    .hero-metric-num.cyan { color: var(--cyan); }
+    .hero-metric-num.red { color: #ff4466; }
+    .hero-metric-num.green { color: #2ecc71; }
+    .hero-metric-num.purple { color: #a78bfa; }
+    .hero-metric-label { font-size: 11px; color: var(--txt3); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.8px; }
+
+    .network-status-bar {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,34,68,0.08); border: 1px solid rgba(255,34,68,0.3);
+      border-radius: 10px; padding: 12px 18px;
+    }
+    .network-status-bar.warning { background: rgba(255,179,71,0.08); border-color: rgba(255,179,71,0.3); }
+    .status-dot-large {
+      width: 12px; height: 12px; border-radius: 50%;
+      flex-shrink: 0; animation: pulse 1.5s infinite;
+    }
+    .status-dot-large.red { background: #ff4466; box-shadow: 0 0 8px #ff4466; }
+    .status-dot-large.amber { background: #ffb347; box-shadow: 0 0 8px #ffb347; }
+    .status-label { font-size: 13px; font-weight: 600; }
+    .status-label.red { color: #ff6680; }
+    .status-label.amber { color: #ffb347; }
+    .status-sub { font-size: 11px; color: var(--txt3); margin-left: auto; }
+
+    /* ── BUSINESS IMPACT ── */
+    .impact-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: stretch; }
+    .impact-box {
+      border-radius: 14px; padding: 28px; position: relative; overflow: hidden;
+    }
+    .impact-box.current {
+      background: rgba(255,30,60,0.06); border: 1px solid rgba(255,30,60,0.2);
+    }
+    .impact-box.improved {
+      background: rgba(46,204,113,0.06); border: 1px solid rgba(46,204,113,0.2);
+    }
+    .impact-box.insight {
+      background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2);
+      display: flex; flex-direction: column; justify-content: center; text-align: center;
+    }
+    .impact-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+    }
+    .impact-label.bad { color: #ff6680; }
+    .impact-label.good { color: #2ecc71; }
+    .impact-label.neutral { color: var(--cyan); }
+    .impact-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .impact-row:last-child { border-bottom: none; }
+    .impact-row-label { font-size: 12px; color: var(--txt2); }
+    .impact-row-val { font-size: 14px; font-weight: 700; }
+    .impact-row-val.bad { color: #ff6680; }
+    .impact-row-val.good { color: #2ecc71; }
+    .impact-row-val.neutral { color: var(--txt); }
+    .avail-bar-wrap { margin-top: 16px; }
+    .avail-label { font-size: 11px; color: var(--txt3); margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .avail-bar { height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+    .avail-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+    .insight-big { font-size: 52px; font-weight: 800; color: var(--cyan); line-height: 1; }
+    .insight-label { font-size: 13px; color: var(--txt2); margin-top: 8px; line-height: 1.5; }
+    .insight-sub { font-size: 11px; color: var(--txt3); margin-top: 10px; }
+
+    /* ── PRIORITY ACTION BOARD ── */
+    .action-header {
+      background: linear-gradient(135deg, rgba(255,100,50,0.12), rgba(255,34,68,0.08));
+      border: 1px solid rgba(255,100,50,0.3);
+      border-radius: 14px 14px 0 0;
+      padding: 20px 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    }
+    .action-title-group { display: flex; align-items: center; gap: 12px; }
+    .action-title { font-size: 16px; font-weight: 700; color: #fff; }
+    .action-subtitle { font-size: 12px; color: #ff9977; margin-top: 2px; }
+    .action-counts { display: flex; gap: 24px; }
+    .action-count-item { text-align: center; }
+    .action-count-num { font-size: 24px; font-weight: 800; }
+    .action-count-num.red { color: #ff4466; }
+    .action-count-num.orange { color: #ff7755; }
+    .action-count-num.amber { color: #ffb347; }
+    .action-count-label { font-size: 10px; color: var(--txt3); text-transform: uppercase; letter-spacing: 0.8px; }
+
+    .insight-callout {
+      background: rgba(0,212,255,0.07); border: 1px solid rgba(0,212,255,0.2);
+      border-radius: 10px; padding: 14px 20px; margin: 16px 0;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .callout-icon { font-size: 24px; flex-shrink: 0; }
+    .callout-text { font-size: 13px; color: var(--txt2); line-height: 1.6; }
+    .callout-text strong { color: #e0f0ff; }
+    .callout-highlight { color: var(--cyan); font-weight: 700; }
+
+    .action-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .action-table thead th {
+      background: rgba(255,255,255,0.03); color: var(--txt3);
+      font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase;
+      padding: 10px 14px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .action-table tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+    }
+    .action-table tbody tr:hover { background: rgba(255,100,50,0.05); }
+    .action-table tbody td { padding: 12px 14px; }
+
+    .urgency-tag {
+      display: inline-block; padding: 4px 11px; border-radius: 20px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.5px; white-space: nowrap;
+    }
+    .urgency-1 { background: rgba(255,34,68,0.2); color: #ff4466; border: 1px solid rgba(255,34,68,0.4); animation: pulse 1.5s infinite; }
+    .urgency-2 { background: rgba(255,107,53,0.2); color: #ff8055; border: 1px solid rgba(255,107,53,0.4); }
+    .urgency-3 { background: rgba(255,179,71,0.2); color: #ffb347; border: 1px solid rgba(255,179,71,0.4); }
+
+    .looks-ok-badge {
+      display: inline-block; background: rgba(46,204,113,0.15); color: #2ecc71;
+      border: 1px solid rgba(46,204,113,0.3); border-radius: 4px;
+      font-size: 9px; font-weight: 700; padding: 2px 6px; margin-left: 5px;
+      letter-spacing: 0.5px;
+    }
+
+    .region-strip {
+      display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap;
+    }
+    .region-chip {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 14px; font-size: 11px;
+    }
+    .region-chip-name { color: var(--txt2); font-weight: 600; }
+    .region-chip-counts { color: var(--txt3); margin-top: 2px; font-size: 10px; }
+
+    .section-divider {
+      display: flex; align-items: center; gap: 16px;
+      margin: 36px 0 28px;
+    }
+    .section-divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+    .section-divider-text {
+      font-size: 10px; color: var(--txt3); text-transform: uppercase; letter-spacing: 2px;
+      white-space: nowrap;
+    }
+
+    .action-body {
+      background: var(--card); border: 1px solid rgba(255,100,50,0.2);
+      border-top: none; border-radius: 0 0 14px 14px; padding: 20px 24px;
+    }
+
+    /* ── AI CHAT WIDGET ── */
+    #chatFab {
+      position: fixed; bottom: 28px; right: 28px; z-index: 1000;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, #00d4ff, #0066ff);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,212,255,0.45);
+      transition: transform 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+    #chatFab:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(0,212,255,0.65); }
+
+    #chatPanel {
+      position: fixed; bottom: 96px; right: 28px; z-index: 999;
+      width: 380px; height: 520px;
+      background: #0c1a2e; border: 1px solid rgba(0,212,255,0.3);
+      border-radius: 16px; display: flex; flex-direction: column;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    }
+    .chat-panel-header {
+      padding: 14px 18px; border-bottom: 1px solid rgba(0,212,255,0.15);
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(0,212,255,0.05); border-radius: 16px 16px 0 0;
+    }
+    .chat-panel-header-left { display: flex; align-items: center; gap: 10px; }
+    .chat-panel-header-left .chat-icon { font-size: 22px; }
+    .chat-panel-title { font-size: 13px; font-weight: 600; color: var(--txt); }
+    .chat-panel-sub { font-size: 10px; color: var(--txt3); letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; }
+    .chat-close-btn {
+      background: none; border: none; color: var(--txt3); cursor: pointer;
+      font-size: 18px; padding: 2px 8px; border-radius: 6px; line-height: 1;
+      transition: color 0.15s;
+    }
+    .chat-close-btn:hover { color: var(--txt); }
+
+    #chatMessages {
+      flex: 1; overflow-y: auto; padding: 14px;
+      display: flex; flex-direction: column; gap: 10px;
+      scrollbar-width: thin; scrollbar-color: rgba(0,212,255,0.2) transparent;
+    }
+    .chat-msg {
+      max-width: 88%; padding: 10px 14px; border-radius: 12px;
+      font-size: 12px; line-height: 1.6; word-break: break-word;
+    }
+    .chat-msg.user {
+      background: rgba(0,102,255,0.2); border: 1px solid rgba(0,102,255,0.4);
+      color: #c8dcff; align-self: flex-end; border-radius: 12px 12px 2px 12px;
+    }
+    .chat-msg.assistant {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--txt); align-self: flex-start; border-radius: 12px 12px 12px 2px;
+    }
+    .chat-msg.typing { color: var(--txt3); font-style: italic; }
+
+    .chat-input-row {
+      padding: 12px 14px; border-top: 1px solid rgba(0,212,255,0.12);
+      display: flex; gap: 8px; background: rgba(0,0,0,0.15);
+      border-radius: 0 0 16px 16px;
+    }
+    .chat-input-row input {
+      flex: 1; background: var(--bg2); border: 1px solid var(--border);
+      color: var(--txt); padding: 8px 12px; border-radius: 8px;
+      font-size: 12px; font-family: 'Inter', sans-serif; outline: none;
+      transition: border-color 0.2s;
+    }
+    .chat-input-row input:focus { border-color: var(--cyan); }
+    .chat-send-btn {
+      background: linear-gradient(135deg, #00d4ff, #0066ff);
+      border: none; color: #000; padding: 8px 16px; border-radius: 8px;
+      font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+    }
+    .chat-send-btn:hover { opacity: 0.85; }
+    .chat-send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── CUSTOM MATRIX GRID ── */
+    .matrix-grid { overflow-x: auto; margin: 16px 0; }
+    .matrix-table { border-collapse: collapse; font-size: 12px; }
+    .matrix-table th {
+      color: var(--txt3); font-size: 10px; font-weight: 600;
+      padding: 6px 4px; text-align: center; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .matrix-table td { padding: 4px; }
+    .matrix-row-label {
+      color: var(--txt2); font-size: 10px; font-weight: 600;
+      padding: 0 10px 0 0; text-align: right; white-space: nowrap;
+      text-transform: uppercase; vertical-align: middle;
+    }
+    .matrix-input {
+      width: 74px; background: var(--bg2); border: 1px solid var(--border);
+      color: var(--txt); padding: 6px 6px; border-radius: 6px;
+      font-size: 12px; font-family: 'Inter', sans-serif; text-align: center;
+      outline: none; transition: border-color 0.2s;
+    }
+    .matrix-input:focus { border-color: var(--cyan); }
+    .matrix-input.row-ok  { border-color: rgba(46,204,113,0.5); }
+    .matrix-input.row-err { border-color: rgba(255,34,68,0.5); }
+    .row-sum-badge {
+      font-size: 11px; padding-left: 10px; font-weight: 700;
+      white-space: nowrap; vertical-align: middle;
+    }
+    .row-sum-badge.ok  { color: #2ecc71; }
+    .row-sum-badge.err { color: #ff4466; }
+
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      border: 2px dashed rgba(0,212,255,0.3); border-radius: 12px;
+      padding: 32px 20px; text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s; margin: 14px 0;
+      background: rgba(0,212,255,0.03); position: relative;
+    }
+    .upload-zone:hover { border-color: var(--cyan); background: rgba(0,212,255,0.06); }
+    .upload-zone-icon { font-size: 32px; margin-bottom: 8px; }
+    .upload-zone-text { font-size: 13px; color: var(--txt2); font-weight: 500; }
+    .upload-zone-sub  { font-size: 11px; color: var(--txt3); margin-top: 5px; }
+
+    /* ── SHARED BUTTONS ── */
+    .btn-primary {
+      background: linear-gradient(135deg, #00d4ff, #0066ff);
+      border: none; color: #000; padding: 10px 22px; border-radius: 8px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-secondary {
+      background: var(--bg2); border: 1px solid var(--border);
+      color: var(--txt2); padding: 10px 22px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: 'Inter', sans-serif; text-decoration: none;
+      display: inline-block; transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--cyan); color: var(--txt); }
+
+    /* ── RESULT STATS ROW ── */
+    .result-stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin: 16px 0; }
+    .result-stat-box {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px; text-align: center;
+    }
+    .result-stat-num   { font-size: 22px; font-weight: 800; color: var(--cyan); }
+    .result-stat-label { font-size: 10px; color: var(--txt3); margin-top: 4px;
+                         text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── MTTF / PROB TABLE ── */
+    .mini-table-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .mini-table-row:last-child { border-bottom: none; }
+    .mini-table-label { font-size: 12px; color: var(--txt2); }
+    .mini-table-val   { font-size: 14px; font-weight: 700; color: var(--cyan); }
+
+    @media (max-width: 1100px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .impact-grid { grid-template-columns: 1fr; }
+      .hero-headline { font-size: 28px; }
+      .result-stat-grid { grid-template-columns: repeat(2,1fr); }
+    }
+
+    @media (max-width: 1400px) {
+      .kpi-grid { grid-template-columns: repeat(3,1fr); }
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 900px) {
+      .kpi-grid { grid-template-columns: repeat(2,1fr); }
+      .grid-2, .grid-3, .grid-2-1, .grid-1-2 { grid-template-columns: 1fr; }
+      main { padding: 16px; }
+      .header-top { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="header-top">
+    <div class="header-brand">
+      <div class="header-icon">🔮</div>
+      <div>
+        <div class="header-title">NetGuard AI</div>
+        <div class="header-sub">Predictive Network Intelligence Platform</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-badge"><span class="live-dot"></span>Live Analytics</div>
+      <div class="header-clock" id="clock">--:--:-- IST</div>
+    </div>
+  </div>
+  <div class="header-meta-bar">
+    <div class="meta-item">Dataset: <span>August 1–14, 2025</span></div>
+    <div class="meta-item">Network Elements: <span>500</span></div>
+    <div class="meta-item">Telemetry Records: <span>168,000</span></div>
+    <div class="meta-item">Failure Events: <span>4,284</span></div>
+    <div class="meta-item">Method: <span>Markov Chain + Monte Carlo Simulation</span></div>
+    <div class="meta-item">Model Accuracy: <span style="color:var(--normal)">99.8% validated</span></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION A — EXECUTIVE HERO
+  ═══════════════════════════════════════════════════════ -->
+  <section class="hero-section">
+    <div class="hero-inner">
+
+      <!-- Left: narrative -->
+      <div>
+        <div class="hero-eyebrow">⚡ AI-Powered Network Intelligence</div>
+        <h1 class="hero-headline">Predicting Network<br>Failures Before<br>They Happen</h1>
+        <p class="hero-desc">
+          Our system monitors <strong>500 telecom network devices in real-time</strong>, computing
+          failure probabilities every hour using Markov Chain AI — and alerts your operations
+          teams <strong>up to 24 hours before a failure occurs</strong>.
+        </p>
+        <ul class="hero-bullets">
+          <li>📡 Every device analysed every hour using live telemetry data</li>
+          <li>⏰ Failures predicted up to 24 hours in advance — giving your team time to act</li>
+          <li>🎯 Tells your engineers exactly which device to fix, in which region, and why</li>
+        </ul>
+      </div>
+
+      <!-- Right: metrics + status -->
+      <div>
+        <div class="hero-metrics-grid">
+          <div class="hero-metric-box">
+            <div class="hero-metric-num cyan">500</div>
+            <div class="hero-metric-label">Devices Monitored</div>
+          </div>
+          <div class="hero-metric-box danger">
+            <div class="hero-metric-num red" id="hero-at-risk">132</div>
+            <div class="hero-metric-label">At Risk Right Now</div>
+          </div>
+          <div class="hero-metric-box">
+            <div class="hero-metric-num purple">24h</div>
+            <div class="hero-metric-label">Advance Warning</div>
+          </div>
+          <div class="hero-metric-box success">
+            <div class="hero-metric-num green">99.8%</div>
+            <div class="hero-metric-label">Model Accuracy</div>
+          </div>
+        </div>
+        <div class="network-status-bar" id="heroStatusBar">
+          <div class="status-dot-large red"></div>
+          <div class="status-label red" id="heroStatusLabel">🔴 CRITICAL ALERT</div>
+          <div class="status-sub" id="heroStatusSub">Loading network status…</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION B — BUSINESS IMPACT
+  ═══════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">Business Impact — What This System Delivers</div>
+    <div class="impact-grid" id="impactGrid">
+
+      <div class="impact-box current">
+        <div class="impact-label bad">❌ Without This System — Reactive Maintenance</div>
+        <div class="impact-row">
+          <span class="impact-row-label">Failures in 14-day period</span>
+          <span class="impact-row-val bad" id="imp-failures-before">4,284</span>
+        </div>
+        <div class="impact-row">
+          <span class="impact-row-label">Avg downtime per failure</span>
+          <span class="impact-row-val neutral">4.9 hours</span>
+        </div>
+        <div class="impact-row">
+          <span class="impact-row-label">Total device-hours offline</span>
+          <span class="impact-row-val bad" id="imp-downtime-before">20,951 h</span>
+        </div>
+        <div class="impact-row">
+          <span class="impact-row-label">Approach</span>
+          <span class="impact-row-val neutral" style="font-size:11px">React after failure</span>
+        </div>
+        <div class="avail-bar-wrap">
+          <div class="avail-label">
+            <span>Network Availability</span>
+            <span id="imp-avail-before" style="color:#ff6680;font-weight:700">87.5%</span>
+          </div>
+          <div class="avail-bar">
+            <div class="avail-fill" id="imp-bar-before" style="width:87.5%;background:linear-gradient(90deg,#ff4466,#ff6680)"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="impact-box improved">
+        <div class="impact-label good">✅ With NetGuard AI — Predictive Maintenance</div>
+        <div class="impact-row">
+          <span class="impact-row-label">Preventable failures (est. 60%)</span>
+          <span class="impact-row-val good" id="imp-prevented">~2,570 prevented</span>
+        </div>
+        <div class="impact-row">
+          <span class="impact-row-label">Device-hours of downtime saved</span>
+          <span class="impact-row-val good" id="imp-saved">~12,571 hours</span>
+        </div>
+        <div class="impact-row">
+          <span class="impact-row-label">Advance warning window</span>
+          <span class="impact-row-val good">Up to 24 hours</span>
+        </div>
+        <div class="impact-row">
+          <span class="impact-row-label">Approach</span>
+          <span class="impact-row-val neutral" style="font-size:11px;color:#2ecc71">Prevent before failure</span>
+        </div>
+        <div class="avail-bar-wrap">
+          <div class="avail-label">
+            <span>Target Network Availability</span>
+            <span id="imp-avail-after" style="color:#2ecc71;font-weight:700">95.0%</span>
+          </div>
+          <div class="avail-bar">
+            <div class="avail-fill" id="imp-bar-after" style="width:95%;background:linear-gradient(90deg,#27ae60,#2ecc71)"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="impact-box insight">
+        <div style="font-size:13px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;font-weight:600">Downtime Prevented</div>
+        <div class="insight-big" id="imp-saved-big">12,571</div>
+        <div style="font-size:16px;color:var(--txt2);margin-top:4px">device-hours</div>
+        <div class="insight-label">saved in 14 days by catching failures before they happen</div>
+        <div style="margin:20px 0;width:100%;height:1px;background:rgba(255,255,255,0.06)"></div>
+        <div style="font-size:13px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;font-weight:600">Availability Gain</div>
+        <div style="font-size:36px;font-weight:800;color:#2ecc71" id="imp-avail-gain">+7.5%</div>
+        <div style="font-size:12px;color:var(--txt3);margin-top:4px">87.5% → 95.0% network availability</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION C — PRIORITY ACTION BOARD
+  ═══════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">Immediate Action Required — AI Early Warning</div>
+
+    <div class="action-header">
+      <div class="action-title-group">
+        <div style="font-size:28px">🚨</div>
+        <div>
+          <div class="action-title">Predicted Next Failures — Act Now to Prevent Them</div>
+          <div class="action-subtitle">These devices have NOT yet failed — your team has a window to intervene</div>
+        </div>
+      </div>
+      <div class="action-counts">
+        <div class="action-count-item">
+          <div class="action-count-num red" id="ac-critical">60</div>
+          <div class="action-count-label">Currently Down</div>
+        </div>
+        <div class="action-count-item">
+          <div class="action-count-num orange" id="ac-high">72</div>
+          <div class="action-count-label">Predicted to Fail</div>
+        </div>
+        <div class="action-count-item">
+          <div class="action-count-num amber" id="ac-medium">339</div>
+          <div class="action-count-label">Under Monitoring</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-body">
+
+      <div class="insight-callout">
+        <div class="callout-icon">🔍</div>
+        <div class="callout-text">
+          <strong>The power of AI prediction:</strong>
+          Of the 72 devices predicted to fail within 24 hours,
+          <span class="callout-highlight" id="ac-looks-ok">56 devices appear completely normal</span>
+          to the human eye — currently showing as <strong>Healthy, Warning, or Minor</strong> state.
+          Without this system, your operations team would <strong>never prioritise them</strong>.
+          Our AI catches them before they break.
+        </div>
+      </div>
+
+      <div style="font-size:12px;color:var(--txt3);margin-bottom:12px;font-weight:500">
+        TOP 10 PRIORITY DEVICES — sorted by 6-hour failure probability
+      </div>
+
+      <div style="overflow-x:auto">
+        <table class="action-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Device ID</th>
+              <th>Type</th>
+              <th>Region</th>
+              <th>Current State</th>
+              <th>Est. Failure In</th>
+              <th>Fail Prob (6h)</th>
+              <th>Fail Prob (24h)</th>
+              <th>Recommended Action</th>
+              <th>Urgency</th>
+            </tr>
+          </thead>
+          <tbody id="actionTableBody">
+            <tr><td colspan="10" style="text-align:center;color:var(--txt3);padding:24px">Loading priority actions…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:18px">
+        <div style="font-size:11px;color:var(--txt3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;font-weight:600">High/Critical Risk by Region</div>
+        <div class="region-strip" id="regionStrip"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ DIVIDER ═══ -->
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-text">Detailed Technical Analytics</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <!-- ═══ KPI CARDS ═══ -->
+  <section>
+    <div class="section-title">Executive Summary</div>
+    <div class="kpi-grid">
+      <div class="kpi-card cyan">
+        <div class="kpi-icon">🌐</div>
+        <div class="kpi-label">Network Elements</div>
+        <div class="kpi-value cyan" id="kpi-total">—</div>
+        <div class="kpi-sub" id="kpi-total-sub">Loading…</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-icon">🚨</div>
+        <div class="kpi-label">Critical Alerts</div>
+        <div class="kpi-value red" id="kpi-critical">—</div>
+        <div class="kpi-sub" id="kpi-critical-sub">Currently in Failure</div>
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-label">High Risk Elements</div>
+        <div class="kpi-value orange" id="kpi-high">—</div>
+        <div class="kpi-sub" id="kpi-high-sub">Needs Attention</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-icon">⏱️</div>
+        <div class="kpi-label">Avg MTTF</div>
+        <div class="kpi-value blue" id="kpi-mttf">—<span class="kpi-unit">h</span></div>
+        <div class="kpi-sub">Mean Time to Failure</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-label">Failure Prob @24h</div>
+        <div class="kpi-value amber" id="kpi-prob">—<span class="kpi-unit">%</span></div>
+        <div class="kpi-sub">Avg across all elements</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-label">Currently Healthy</div>
+        <div class="kpi-value green" id="kpi-healthy">—<span class="kpi-unit">%</span></div>
+        <div class="kpi-sub" id="kpi-healthy-sub">Of all elements</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ROW 1: Donuts + MC Validation ═══ -->
+  <section>
+    <div class="section-title">Network Health Overview</div>
+    <div class="grid-3">
+
+      <div class="card fade-in">
+        <div class="card-title">📡 Current State Distribution</div>
+        <div class="card-desc">Live health state across all 500 network elements</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="chartStateDonut"></canvas>
+        </div>
+      </div>
+
+      <div class="card fade-in">
+        <div class="card-title">🎯 Risk Level Classification</div>
+        <div class="card-desc">AI-powered risk assessment using Markov Chain failure probability</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="chartRiskDonut"></canvas>
+        </div>
+      </div>
+
+      <div class="card fade-in">
+        <div class="card-title">🔬 Model Validation: Analytical vs Monte Carlo</div>
+        <div class="card-desc">Cross-validation of Markov model with 5,000-run Monte Carlo simulation</div>
+        <div class="mc-compare" id="mcValidation" style="margin-top:8px">
+          <div class="mc-box analytical">
+            <div class="mc-method">Analytical (Markov)</div>
+            <div class="mc-prob" id="mc-analytical">—</div>
+            <div class="mc-sub">P(Failure within 168h)</div>
+            <div style="margin-top:10px;font-size:11px;color:var(--txt3)">MTTF: <span id="mc-mttf-val" style="color:var(--cyan)">—</span>h</div>
+          </div>
+          <div class="match-indicator">
+            <div class="match-pct" id="mc-match">—</div>
+            <div class="match-label">Model<br>Accuracy</div>
+          </div>
+          <div class="mc-box montecarlo">
+            <div class="mc-method">Monte Carlo (5,000 sims)</div>
+            <div class="mc-prob" id="mc-simulation">—</div>
+            <div class="mc-sub">P(Failure within 168h)</div>
+            <div style="margin-top:10px;font-size:11px;color:var(--txt3)">Avg TTF: <span id="mc-ttf-val" style="color:#a78bfa">—</span>h</div>
+          </div>
+        </div>
+        <div class="insights" id="mc-insights">
+          <div class="insight-pill">✓ <strong>99.8%</strong> model accuracy</div>
+          <div class="insight-pill">✓ Markov model validated</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ROW 2: Failure Probability Curves ═══ -->
+  <section>
+    <div class="section-title">Predictive Failure Intelligence</div>
+    <div class="card fade-in">
+      <div class="card-title">📈 Failure Probability Over Time — By Starting State</div>
+      <div class="card-desc">
+        Probability of a network element entering Failure state within N hours, starting from each health state.
+        Computed using Markov chain matrix powers over a 168-hour (7-day) horizon.
+      </div>
+      <div class="chart-wrap" style="height:320px">
+        <canvas id="chartFailureCurves"></canvas>
+      </div>
+      <div class="insights" style="margin-top:12px">
+        <div class="insight-pill">From <strong>Healthy</strong>: 50.6% chance of failure within 24h</div>
+        <div class="insight-pill">From <strong>Major</strong>: 42.6% chance of failure within 6h</div>
+        <div class="insight-pill">From <strong>Warning</strong>: 53.6% chance of failure within 24h</div>
+        <div class="insight-pill">All states converge to ~99% within 7 days</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ROW 3: MTTF Analysis ═══ -->
+  <section>
+    <div class="section-title">Mean Time to Failure (MTTF) Analysis</div>
+    <div class="grid-2">
+
+      <div class="card fade-in">
+        <div class="card-title">🏗️ MTTF by Network Element Type</div>
+        <div class="card-desc">Average MTTF (hours) computed from absorbing Markov chain fundamental matrix N = (I−Q)⁻¹</div>
+        <div class="chart-wrap" style="height:240px">
+          <canvas id="chartMTTFType"></canvas>
+        </div>
+      </div>
+
+      <div class="card fade-in">
+        <div class="card-title">🗺️ MTTF by Geographic Region</div>
+        <div class="card-desc">Average MTTF and high-risk element count per region</div>
+        <div class="chart-wrap" style="height:240px">
+          <canvas id="chartMTTFRegion"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ROW 4: Heatmaps ═══ -->
+  <section>
+    <div class="section-title">Model Intelligence — Correlation & State Transitions</div>
+    <div class="grid-2">
+
+      <div class="card fade-in">
+        <div class="card-title">🔥 KPI Correlation Matrix</div>
+        <div class="card-desc">
+          Pearson correlation between performance indicators across all 168,000 readings.
+          High correlation means KPIs degrade together — any single metric is an early warning signal.
+        </div>
+        <div id="corrHeatmap" style="overflow-x:auto;margin-top:8px"></div>
+        <div class="insights" style="margin-top:10px">
+          <div class="insight-pill">CPU↔Signal Quality: <strong>−0.920</strong></div>
+          <div class="insight-pill">Pkt Drop↔Errors: <strong>+0.976</strong></div>
+          <div class="insight-pill">All KPIs <strong>strongly co-degrade</strong></div>
+        </div>
+      </div>
+
+      <div class="card fade-in">
+        <div class="card-title">🔄 State Transition Probability Matrix</div>
+        <div class="card-desc">
+          Empirically estimated hourly transition probabilities from 167,500 state transitions.
+          Rows = from-state, Columns = to-state.
+        </div>
+        <div id="transHeatmap" style="overflow-x:auto;margin-top:8px"></div>
+        <div class="insights" style="margin-top:10px">
+          <div class="insight-pill">Failure absorption: <strong>79.7%</strong> per hour</div>
+          <div class="insight-pill">Self-repair from Failure: <strong>20.3%/h</strong></div>
+          <div class="insight-pill">Healthy state stability: <strong>87.8%</strong></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION: CUSTOM MATRIX ANALYZER
+  ═══════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">What-If Analysis — Custom Transition Matrix</div>
+    <div class="card fade-in">
+      <div class="card-title">⚙️ Enter Your Own Transition Matrix</div>
+      <div class="card-desc">
+        Modify the probabilities below to simulate "what if I improve the network?" scenarios.
+        Each row must sum to <strong style="color:var(--cyan)">1.0</strong> (green border = OK, red = invalid).
+        Click <strong style="color:var(--cyan)">Analyze</strong> to instantly compute failure curves and MTTF for your matrix.
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+        <button class="btn-primary" id="analyzeMatrixBtn" onclick="analyzeCustomMatrix()">Analyze Matrix</button>
+        <button class="btn-secondary" onclick="resetToDefaultMatrix()">Reset to Network Defaults</button>
+        <span style="font-size:11px;color:var(--txt3)">Default values are pre-filled from the live network transition matrix.</span>
+      </div>
+
+      <div class="matrix-grid">
+        <table class="matrix-table" id="customMatrixTable"></table>
+      </div>
+
+      <div id="customMatrixResults" style="display:none;margin-top:24px">
+        <div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:600;display:flex;align-items:center;gap:8px">
+          <span style="display:inline-block;width:3px;height:12px;background:var(--cyan);border-radius:2px"></span>
+          Analysis Results — Your Custom Matrix
+        </div>
+        <div class="grid-2">
+          <div>
+            <div style="font-size:11px;color:var(--txt3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px">Failure Probability Curves (168h)</div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chartCustomCurves"></canvas></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--txt3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px">Mean Time to Failure (MTTF)</div>
+            <div id="customMTTFTable"></div>
+            <div style="margin-top:18px">
+              <div style="font-size:11px;color:var(--txt3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px">24-hour Failure Probability</div>
+              <div id="custom24hProbs"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION: TELEMETRY UPLOAD — TRAIN YOUR OWN MODEL
+  ═══════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">Train Your Own Model — Upload Telemetry CSV</div>
+    <div class="card fade-in">
+      <div class="card-title">📂 Upload Your Device State History</div>
+      <div class="card-desc">
+        Upload a CSV of your own device state observations. The system estimates a Markov transition matrix
+        using <strong>maximum likelihood estimation</strong> and computes failure predictions specific to your network —
+        no manual matrix entry required.
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
+        <a href="/api/sample-csv" download class="btn-secondary" style="font-size:11px;padding:7px 16px">⬇ Download Sample CSV</a>
+        <span style="font-size:11px;color:var(--txt3)">
+          Required column: <code style="color:var(--cyan);background:rgba(0,212,255,0.1);padding:1px 6px;border-radius:4px">state</code> &nbsp;·&nbsp;
+          Optional: <code style="color:var(--cyan);background:rgba(0,212,255,0.1);padding:1px 6px;border-radius:4px">element_id</code>
+        </span>
+      </div>
+
+      <div class="upload-zone" onclick="document.getElementById('csvFile').click()">
+        <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleFileSelected()" />
+        <div class="upload-zone-icon">📊</div>
+        <div class="upload-zone-text" id="uploadZoneText">Drop your CSV here or click to browse</div>
+        <div class="upload-zone-sub">Valid states: Healthy · Warning · Minor · Major · Failure</div>
+      </div>
+
+      <button class="btn-primary" id="uploadBtn" onclick="uploadTelemetry()">Upload &amp; Analyze</button>
+
+      <div id="uploadResults" style="display:none;margin-top:24px">
+        <div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:600;display:flex;align-items:center;gap:8px">
+          <span style="display:inline-block;width:3px;height:12px;background:#2ecc71;border-radius:2px"></span>
+          Model Estimated from Your Data
+        </div>
+
+        <div class="result-stat-grid">
+          <div class="result-stat-box"><div class="result-stat-num" id="upload-rows">—</div><div class="result-stat-label">Rows Processed</div></div>
+          <div class="result-stat-box"><div class="result-stat-num" id="upload-transitions">—</div><div class="result-stat-label">Transitions Counted</div></div>
+          <div class="result-stat-box"><div class="result-stat-num" id="upload-elements">—</div><div class="result-stat-label">Unique Devices</div></div>
+          <div class="result-stat-box"><div class="result-stat-num" style="font-size:13px;color:#2ecc71" id="upload-method">MLE</div><div class="result-stat-label">Estimation Method</div></div>
+        </div>
+
+        <div class="grid-2" style="margin-top:16px">
+          <div>
+            <div style="font-size:11px;color:var(--txt3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px">Estimated Failure Curves (168h)</div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chartUploadCurves"></canvas></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--txt3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px">Estimated Transition Matrix</div>
+            <div id="uploadMatrixHeatmap" style="overflow-x:auto"></div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:16px">
+          <div>
+            <div style="font-size:11px;color:var(--txt3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px">MTTF by Starting State</div>
+            <div id="uploadMTTFTable"></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--txt3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px">24-hour Failure Probability</div>
+            <div id="upload24hProbs"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ELEMENTS TABLE ═══ -->
+  <section>
+    <div class="section-title">Network Element Risk Assessment — All 500 Elements</div>
+    <div class="card">
+      <div class="card-title">🗂️ Detailed Risk Dashboard</div>
+      <div class="card-desc">Real-time risk scoring using individual transition matrices. Click column headers to sort.</div>
+
+      <div class="table-controls">
+        <input class="ctrl-input" id="searchInput" type="text" placeholder="🔍 Search element ID…" oninput="reloadTable()" />
+        <select class="ctrl-select" id="riskFilter" onchange="reloadTable()">
+          <option value="ALL">All Risk Levels</option>
+          <option value="CRITICAL">CRITICAL</option>
+          <option value="HIGH">HIGH</option>
+          <option value="MEDIUM">MEDIUM</option>
+          <option value="LOW">LOW</option>
+          <option value="NORMAL">NORMAL</option>
+        </select>
+        <select class="ctrl-select" id="typeFilter" onchange="reloadTable()">
+          <option value="ALL">All Types</option>
+          <option value="RAN">RAN</option>
+          <option value="OPTICAL">OPTICAL</option>
+          <option value="EDGE">EDGE</option>
+          <option value="CORE">CORE</option>
+        </select>
+        <select class="ctrl-select" id="sortCol" onchange="reloadTable()">
+          <option value="prob_fail_24h">Sort: Fail Prob 24h ↓</option>
+          <option value="mttf_hours">Sort: MTTF ↑</option>
+          <option value="prob_fail_1h">Sort: Fail Prob 1h ↓</option>
+          <option value="cpu_pct">Sort: CPU% ↓</option>
+          <option value="signal_quality">Sort: Signal ↓</option>
+        </select>
+        <span class="page-info" id="tableInfo">Loading…</span>
+      </div>
+
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Element ID</th>
+              <th>Type</th>
+              <th>Region</th>
+              <th>State</th>
+              <th>Risk Level</th>
+              <th>MTTF (h)</th>
+              <th>P(Fail@1h)</th>
+              <th>P(Fail@6h)</th>
+              <th>P(Fail@24h)</th>
+              <th>P(Fail@7d)</th>
+              <th>CPU%</th>
+              <th>Mem%</th>
+              <th>Temp°C</th>
+              <th>Signal</th>
+              <th>Errors</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="15" style="text-align:center;color:var(--txt3);padding:30px">Loading data…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </section>
+
+  <!-- ═══ TYPE/REGION SUMMARY CARDS ═══ -->
+  <section>
+    <div class="section-title">Risk Summary by Type & Region</div>
+    <div class="grid-2">
+      <div class="card fade-in">
+        <div class="card-title">📱 Risk by Element Type</div>
+        <div id="typeSummary"></div>
+      </div>
+      <div class="card fade-in">
+        <div class="card-title">📍 Risk by Region</div>
+        <div id="regionSummary"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div>
+    <div class="footer-brand">🔮 NetGuard AI — Network Intelligence Platform</div>
+    <div class="footer-tags">
+      <span class="footer-tag">Markov Chain Analysis</span>
+      <span class="footer-tag">Monte Carlo Simulation</span>
+      <span class="footer-tag">500 NE Dataset</span>
+      <span class="footer-tag">168,000 Telemetry Records</span>
+      <span class="footer-tag">Absorbing Chain MTTF</span>
+    </div>
+  </div>
+  <div class="footer-meta">
+    <div>Powered by Markov Chain Theory & Predictive Analytics</div>
+    <div style="margin-top:4px;color:var(--cyan)">Dataset: Aug 1–14, 2025 | 500 Network Elements | IST Timezone</div>
+  </div>
+</footer>
+
+<!-- ═══ AI CHAT WIDGET (floating, fixed bottom-right) ═══ -->
+<div id="chatFab" onclick="toggleChat()" title="Ask NetGuard AI">💬</div>
+
+<div id="chatPanel" style="display:none">
+  <div class="chat-panel-header">
+    <div class="chat-panel-header-left">
+      <span class="chat-icon">🤖</span>
+      <div>
+        <div class="chat-panel-title">NetGuard AI Assistant</div>
+        <div class="chat-panel-sub">Powered by GPT-4o-mini</div>
+      </div>
+    </div>
+    <button class="chat-close-btn" onclick="toggleChat()">✕</button>
+  </div>
+  <div id="chatMessages">
+    <div class="chat-msg assistant">
+      Hello! I have live access to all 500 network elements on this dashboard.
+      Ask me about failure predictions, which devices to prioritise, what the numbers mean, or anything else about network reliability.
+    </div>
+  </div>
+  <div class="chat-input-row">
+    <input id="chatInput" placeholder="Ask about network health…"
+           onkeydown="if(event.key==='Enter'&&!event.shiftKey){sendChat();event.preventDefault()}" />
+    <button class="chat-send-btn" id="chatSendBtn" onclick="sendChat()">→</button>
+  </div>
+</div>
+
+<script>
+const API = '/api';
+let currentPage = 1;
+let currentSort = 'prob_fail_24h';
+let currentOrder = 'desc';
+const CHART_DEFAULTS = {
+  color: 'rgba(255,255,255,0.6)',
+  grid: 'rgba(255,255,255,0.04)',
+  tick: '#7ab3d8'
+};
+
+// ── Clock ──
+function updateClock() {
+  const now = new Date();
+  const ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  document.getElementById('clock').textContent =
+    ist.toLocaleTimeString('en-IN') + ' IST';
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── Chart registry ──
+const charts = {};
+function makeChart(id, config) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), config);
+  return charts[id];
+}
+
+// ── Colour helpers ──
+const STATE_COLORS = {
+  Healthy: '#2ecc71', Warning: '#f39c12',
+  Minor: '#e67e22', Major: '#e74c3c', Failure: '#c0392b'
+};
+const RISK_COLORS = {
+  CRITICAL: '#ff2244', HIGH: '#ff6b35',
+  MEDIUM: '#ffb347', LOW: '#4ec9ff', NORMAL: '#2ecc71'
+};
+function probColor(v) {
+  if (v >= 0.7) return '#ff2244';
+  if (v >= 0.4) return '#ff6b35';
+  if (v >= 0.2) return '#ffb347';
+  if (v >= 0.05) return '#4ec9ff';
+  return '#2ecc71';
+}
+
+// ── Heatmap renderer (HTML table) ──
+function renderHeatmap(containerId, labels, matrix, colorFn, fmt) {
+  const el = document.getElementById(containerId);
+  let html = '<table class="heatmap-table"><thead><tr><th></th>';
+  labels.forEach(l => { html += `<th title="${l}">${l.replace('_pct','%').replace('_c','°C').replace('_count','#')}</th>`; });
+  html += '</tr></thead><tbody>';
+  matrix.forEach((row, i) => {
+    html += `<tr><td class="row-label">${labels[i].replace('_pct','%').replace('_c','°C').replace('_count','#')}</td>`;
+    row.forEach(v => {
+      const { bg, text } = colorFn(v);
+      html += `<td style="background:${bg};color:${text}" title="${fmt(v)}">${fmt(v)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function corrColor(v) {
+  const abs = Math.abs(v);
+  if (v > 0) {
+    const r = Math.round(30 + abs * 200);
+    const g = Math.round(60 + (1 - abs) * 160);
+    const b = Math.round(20 + (1 - abs) * 20);
+    return { bg: `rgb(${r},${g},${b})`, text: abs > 0.5 ? '#fff' : '#ccc' };
+  } else {
+    const r = Math.round(20 + (1 - abs) * 20);
+    const g = Math.round(20 + (1 - abs) * 100);
+    const b = Math.round(80 + abs * 160);
+    return { bg: `rgb(${r},${g},${b})`, text: abs > 0.5 ? '#fff' : '#ccc' };
+  }
+}
+function transColor(v) {
+  const b = Math.round(255 * v);
+  const a = 0.15 + v * 0.85;
+  return { bg: `rgba(0,${120 + Math.round(92*v)},${b},${a})`, text: v > 0.3 ? '#fff' : '#7ab3d8' };
+}
+
+// ── Donut chart ──
+function renderDonut(canvasId, labels, values, colors, title) {
+  makeChart(canvasId, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#0c1a2e', hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { color: CHART_DEFAULTS.tick, font: { size: 11 }, padding: 10, boxWidth: 12 }
+        },
+        tooltip: {
+          backgroundColor: '#0c1a2e', borderColor: 'rgba(0,212,255,0.4)', borderWidth: 1,
+          titleColor: '#e0f0ff', bodyColor: '#7ab3d8',
+          callbacks: {
+            label: ctx => {
+              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = ((ctx.parsed / total) * 100).toFixed(1);
+              return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── Failure probability curves ──
+function renderFailureCurves(data) {
+  const COLORS = {
+    Healthy: '#2ecc71', Warning: '#f39c12', Minor: '#e67e22', Major: '#e74c3c'
+  };
+  const DASHES = { Healthy: [], Warning: [5, 3], Minor: [3, 3], Major: [8, 3] };
+  const datasets = Object.entries(data.curves).map(([state, probs]) => ({
+    label: `From ${state}`,
+    data: data.hours.map((h, i) => ({ x: h, y: probs[i] * 100 })),
+    borderColor: COLORS[state],
+    backgroundColor: `${COLORS[state]}15`,
+    borderWidth: 2.5,
+    borderDash: DASHES[state],
+    fill: false,
+    pointRadius: 0, tension: 0.4,
+  }));
+
+  // Add hour markers
+  const annotations = {};
+
+  makeChart('chartFailureCurves', {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: {
+          type: 'linear', title: { display: true, text: 'Hours from now', color: CHART_DEFAULTS.tick, font: { size: 11 } },
+          ticks: { color: CHART_DEFAULTS.tick, font: { size: 11 } },
+          grid: { color: CHART_DEFAULTS.grid },
+          min: 0, max: 168,
+        },
+        y: {
+          title: { display: true, text: 'Failure Probability (%)', color: CHART_DEFAULTS.tick, font: { size: 11 } },
+          ticks: { color: CHART_DEFAULTS.tick, font: { size: 11 }, callback: v => v + '%' },
+          grid: { color: CHART_DEFAULTS.grid },
+          min: 0, max: 100,
+        }
+      },
+      plugins: {
+        legend: { labels: { color: CHART_DEFAULTS.tick, font: { size: 12 }, padding: 16, boxWidth: 20 } },
+        tooltip: {
+          backgroundColor: '#0c1a2e', borderColor: 'rgba(0,212,255,0.4)', borderWidth: 1,
+          titleColor: '#e0f0ff', bodyColor: '#7ab3d8',
+          callbacks: {
+            title: items => `Hour ${items[0].parsed.x}`,
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── MTTF bar charts ──
+function renderMTTFCharts(data) {
+  const barOpts = (labels, values, colors, xlabel) => ({
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderRadius: 6, borderSkipped: false,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: {
+          title: { display: true, text: 'MTTF (hours)', color: CHART_DEFAULTS.tick, font: { size: 11 } },
+          ticks: { color: CHART_DEFAULTS.tick, font: { size: 11 } },
+          grid: { color: CHART_DEFAULTS.grid },
+        },
+        y: { ticks: { color: CHART_DEFAULTS.tick, font: { size: 12 } }, grid: { display: false } }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0c1a2e', borderColor: 'rgba(0,212,255,0.4)', borderWidth: 1,
+          titleColor: '#e0f0ff', bodyColor: '#7ab3d8',
+          callbacks: { label: ctx => ` MTTF: ${ctx.parsed.x.toFixed(1)} hours` }
+        }
+      }
+    }
+  });
+
+  const typeColors = ['#00d4ff', '#4ec9ff', '#7ab3d8', '#a78bfa'];
+  const regionColors = ['#2ecc71', '#f39c12', '#e74c3c', '#4ec9ff', '#a78bfa'];
+
+  const typeData = data.by_type.sort((a, b) => a.mean - b.mean);
+  makeChart('chartMTTFType', barOpts(
+    typeData.map(d => d.type),
+    typeData.map(d => d.mean),
+    typeColors
+  ));
+
+  const regData = data.by_region.sort((a, b) => a.mean - b.mean);
+  makeChart('chartMTTFRegion', barOpts(
+    regData.map(d => d.region),
+    regData.map(d => d.mean),
+    regionColors
+  ));
+}
+
+// ── Render summary rows ──
+function renderSummaryTable(containerId, data, key, label) {
+  const el = document.getElementById(containerId);
+  const sorted = [...data].sort((a, b) => b.critical_high - a.critical_high);
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr style="color:var(--txt3);font-size:10px;text-transform:uppercase;letter-spacing:1px">
+      <th style="text-align:left;padding:6px 8px">${label}</th>
+      <th style="text-align:center;padding:6px 8px">Total</th>
+      <th style="text-align:center;padding:6px 8px">Critical/High</th>
+      <th style="text-align:center;padding:6px 8px">Avg MTTF</th>
+      <th style="text-align:center;padding:6px 8px">24h Fail Prob</th>
+    </tr></thead><tbody>`;
+  sorted.forEach(d => {
+    const pct = ((d.critical_high / d.total) * 100).toFixed(0);
+    const barW = Math.round((d.avg_fail_24h || 0) * 100);
+    const mttfVal = d.avg_mttf ? d.avg_mttf.toFixed(1) + 'h' : '—';
+    html += `<tr style="border-top:1px solid rgba(255,255,255,0.04)">
+      <td style="padding:8px;font-weight:600;color:var(--txt)">${d[key]}</td>
+      <td style="text-align:center;color:var(--txt2)">${d.total}</td>
+      <td style="text-align:center">
+        <span style="color:var(--critical);font-weight:600">${d.critical_high}</span>
+        <span style="color:var(--txt3);font-size:10px"> (${pct}%)</span>
+      </td>
+      <td style="text-align:center;color:var(--cyan)">${mttfVal}</td>
+      <td style="text-align:center">
+        <div class="prob-bar-wrap">
+          <div class="prob-bar" style="width:${barW}px;max-width:80px"></div>
+          <span class="prob-val">${((d.avg_fail_24h||0)*100).toFixed(1)}%</span>
+        </div>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// ── Elements table ──
+function reloadTable() {
+  currentPage = 1;
+  loadTable();
+}
+
+async function loadTable() {
+  const search = document.getElementById('searchInput').value;
+  const risk = document.getElementById('riskFilter').value;
+  const type = document.getElementById('typeFilter').value;
+  const sortColEl = document.getElementById('sortCol');
+  const sortVal = sortColEl.value;
+
+  let order = 'desc';
+  if (sortVal === 'mttf_hours' || sortVal === 'signal_quality') order = 'asc';
+
+  const url = `${API}/elements?page=${currentPage}&limit=20&sort_col=${sortVal}&order=${order}&risk_filter=${risk}&type_filter=${type}&search=${encodeURIComponent(search)}`;
+  const data = await fetch(url).then(r => r.json());
+  renderTable(data);
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('tableBody');
+  const totalPages = Math.ceil(data.total / data.limit);
+
+  document.getElementById('tableInfo').textContent =
+    `Showing ${(data.page - 1) * data.limit + 1}–${Math.min(data.page * data.limit, data.total)} of ${data.total} elements`;
+
+  if (!data.data.length) {
+    tbody.innerHTML = '<tr><td colspan="15" style="text-align:center;color:var(--txt3);padding:30px">No elements match the filter</td></tr>';
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = data.data.map(row => {
+    const stateClass = row.current_state.replace(' ', '');
+    const mttfDisplay = row.mttf_hours >= 99999 ? '∞' : row.mttf_hours.toFixed(1);
+    const p24w = Math.round(row.prob_fail_24h * 80);
+    return `
+    <tr>
+      <td style="font-weight:600;font-family:monospace;color:var(--cyan)">${row.element_id}</td>
+      <td><span style="background:rgba(0,212,255,0.1);color:var(--cyan);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600">${row.type}</span></td>
+      <td style="color:var(--txt2)">${row.region}</td>
+      <td><span class="state-dot ${stateClass}">${row.current_state}</span></td>
+      <td><span class="badge ${row.risk_level}">${row.risk_level}</span></td>
+      <td style="color:var(--txt2);font-variant-numeric:tabular-nums">${mttfDisplay}</td>
+      <td style="color:${probColor(row.prob_fail_1h)};font-weight:600">${(row.prob_fail_1h*100).toFixed(1)}%</td>
+      <td style="color:${probColor(row.prob_fail_6h)};font-weight:600">${(row.prob_fail_6h*100).toFixed(1)}%</td>
+      <td>
+        <div class="prob-bar-wrap">
+          <div class="prob-bar" style="width:${p24w}px;max-width:80px"></div>
+          <span style="color:${probColor(row.prob_fail_24h)};font-weight:600">${(row.prob_fail_24h*100).toFixed(1)}%</span>
+        </div>
+      </td>
+      <td style="color:${probColor(row.prob_fail_1week)};font-weight:500">${(row.prob_fail_1week*100).toFixed(1)}%</td>
+      <td style="color:${row.cpu_pct>80?'#ff6b35':row.cpu_pct>60?'#ffb347':CHART_DEFAULTS.tick}">${row.cpu_pct.toFixed(0)}%</td>
+      <td style="color:${row.memory_pct>80?'#ff6b35':row.memory_pct>60?'#ffb347':CHART_DEFAULTS.tick}">${row.memory_pct.toFixed(0)}%</td>
+      <td style="color:${row.temperature_c>80?'#ff6b35':row.temperature_c>65?'#ffb347':CHART_DEFAULTS.tick}">${row.temperature_c.toFixed(0)}°C</td>
+      <td style="color:${row.signal_quality<40?'#ff6b35':row.signal_quality<60?'#ffb347':CHART_DEFAULTS.tick}">${row.signal_quality.toFixed(0)}</td>
+      <td style="color:${row.error_count>100?'#ff6b35':row.error_count>50?'#ffb347':CHART_DEFAULTS.tick}">${row.error_count}</td>
+    </tr>`;
+  }).join('');
+
+  // Pagination
+  const pag = document.getElementById('pagination');
+  let pagHtml = `<button class="page-btn" ${currentPage <= 1 ? 'disabled' : ''} onclick="prevPage()">← Prev</button>`;
+  const start = Math.max(1, currentPage - 2);
+  const end = Math.min(totalPages, start + 4);
+  for (let p = start; p <= end; p++) {
+    pagHtml += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+  }
+  pagHtml += `<button class="page-btn" ${currentPage >= totalPages ? 'disabled' : ''} onclick="nextPage()">Next →</button>`;
+  pagHtml += `<span class="page-info">Page ${currentPage} of ${totalPages}</span>`;
+  pag.innerHTML = pagHtml;
+}
+
+function prevPage() { if (currentPage > 1) { currentPage--; loadTable(); } }
+function nextPage() { currentPage++; loadTable(); }
+function goPage(p) { currentPage = p; loadTable(); }
+
+// ── Hero Section ──
+function renderHero(summary, priorities) {
+  const rd = summary.risk_distribution;
+  const atRisk = (rd.CRITICAL || 0) + (rd.HIGH || 0);
+  document.getElementById('hero-at-risk').textContent = atRisk;
+  document.getElementById('ac-critical').textContent = priorities.currently_failing;
+  document.getElementById('ac-high').textContent = priorities.high_risk;
+  document.getElementById('ac-medium').textContent = priorities.medium_risk;
+  document.getElementById('ac-looks-ok').textContent =
+    `${priorities.look_ok_but_high_risk} devices appear completely normal`;
+
+  const failing = priorities.currently_failing;
+  const bar = document.getElementById('heroStatusBar');
+  const label = document.getElementById('heroStatusLabel');
+  const sub = document.getElementById('heroStatusSub');
+  if (failing > 0) {
+    label.textContent = '🔴 CRITICAL ALERT';
+    sub.textContent = `${failing} devices currently in failure state — dispatch teams immediately`;
+  } else {
+    bar.className = 'network-status-bar warning';
+    bar.querySelector('.status-dot-large').className = 'status-dot-large amber';
+    label.className = 'status-label amber';
+    label.textContent = '🟡 ELEVATED RISK';
+    sub.textContent = `${priorities.high_risk} devices at high risk — monitoring closely`;
+  }
+}
+
+// ── Business Impact ──
+function renderBusinessImpact(impact) {
+  const c = impact.current;
+  const w = impact.with_netguard;
+  document.getElementById('imp-failures-before').textContent = c.total_failures.toLocaleString();
+  document.getElementById('imp-downtime-before').textContent = c.total_downtime_device_hours.toLocaleString() + ' h';
+  document.getElementById('imp-avail-before').textContent = c.availability_pct + '%';
+  document.getElementById('imp-bar-before').style.width = c.availability_pct + '%';
+  document.getElementById('imp-prevented').textContent = `~${w.preventable_failures.toLocaleString()} prevented`;
+  document.getElementById('imp-saved').textContent = `~${w.downtime_hours_saved.toLocaleString()} hours`;
+  document.getElementById('imp-avail-after').textContent = w.availability_pct + '%';
+  document.getElementById('imp-bar-after').style.width = w.availability_pct + '%';
+  document.getElementById('imp-saved-big').textContent = w.downtime_hours_saved.toLocaleString();
+  const gain = (w.availability_pct - c.availability_pct).toFixed(1);
+  document.getElementById('imp-avail-gain').textContent = '+' + gain + '%';
+}
+
+// ── Priority Action Board ──
+function renderPriorityActions(priorities) {
+  const actions = priorities.priority_actions;
+  const tbody = document.getElementById('actionTableBody');
+
+  if (!actions || !actions.length) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--txt3);padding:24px">No high-risk pre-failure devices found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = actions.map((a, i) => {
+    const stateClass = a.current_state.replace(' ', '');
+    const looksOkBadge = a.looks_healthy
+      ? `<span class="looks-ok-badge">LOOKS FINE</span>` : '';
+    const mttfDisplay = a.mttf_hours >= 99999 ? '—' : `~${a.mttf_hours.toFixed(0)}h`;
+    return `
+    <tr>
+      <td style="color:var(--txt3);font-weight:700">${i + 1}</td>
+      <td style="font-family:monospace;font-weight:700;color:var(--cyan)">${a.element_id}</td>
+      <td><span style="background:rgba(0,212,255,0.1);color:var(--cyan);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600">${a.type}</span></td>
+      <td style="color:var(--txt2)">${a.region}</td>
+      <td><span class="state-dot ${stateClass}">${a.current_state}</span>${looksOkBadge}</td>
+      <td style="color:#ffb347;font-weight:700">${mttfDisplay}</td>
+      <td style="color:${probColor(a.prob_fail_6h/100)};font-weight:700">${a.prob_fail_6h}%</td>
+      <td style="color:${probColor(a.prob_fail_24h/100)};font-weight:700">${a.prob_fail_24h}%</td>
+      <td style="color:var(--txt2);font-size:11px;max-width:240px">${a.recommended_action}</td>
+      <td><span class="urgency-tag urgency-${a.urgency_level}">${a.urgency}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Region strip
+  const strip = document.getElementById('regionStrip');
+  strip.innerHTML = (priorities.region_breakdown || []).map(r =>
+    `<div class="region-chip">
+      <div class="region-chip-name">${r.region}</div>
+      <div class="region-chip-counts">
+        <span style="color:#ff4466">${r.critical} critical</span> ·
+        <span style="color:#ff8055">${r.high} high</span>
+      </div>
+    </div>`
+  ).join('');
+}
+
+// ── Main init ──
+async function init() {
+  try {
+    const [summary, curves, mttf, transition, correlation, mc, impact, priorities] = await Promise.all([
+      fetch(`${API}/summary`).then(r => r.json()),
+      fetch(`${API}/failure-curves`).then(r => r.json()),
+      fetch(`${API}/mttf-breakdown`).then(r => r.json()),
+      fetch(`${API}/transition-matrix`).then(r => r.json()),
+      fetch(`${API}/kpi-correlation`).then(r => r.json()),
+      fetch(`${API}/monte-carlo`).then(r => r.json()),
+      fetch(`${API}/business-impact`).then(r => r.json()),
+      fetch(`${API}/priority-actions`).then(r => r.json()),
+    ]);
+
+    // ── New executive sections ──
+    renderHero(summary, priorities);
+    renderBusinessImpact(impact);
+    renderPriorityActions(priorities);
+
+    // KPI Cards
+    const rd = summary.risk_distribution;
+    const sd = summary.state_distribution;
+    document.getElementById('kpi-total').innerHTML = `${summary.total_elements}<span class="kpi-unit"> NE</span>`;
+    document.getElementById('kpi-total-sub').textContent = summary.data_period;
+    document.getElementById('kpi-critical').textContent = rd.CRITICAL || 0;
+    document.getElementById('kpi-critical-sub').textContent = `${(((rd.CRITICAL||0)/summary.total_elements)*100).toFixed(1)}% of network`;
+    document.getElementById('kpi-high').textContent = rd.HIGH || 0;
+    document.getElementById('kpi-high-sub').textContent = `${(((rd.HIGH||0)/summary.total_elements)*100).toFixed(1)}% need attention`;
+    document.getElementById('kpi-mttf').innerHTML = `${summary.avg_mttf_hours}<span class="kpi-unit">h</span>`;
+    document.getElementById('kpi-prob').innerHTML = `${(summary.avg_fail_prob_24h*100).toFixed(1)}<span class="kpi-unit">%</span>`;
+    document.getElementById('kpi-healthy').innerHTML = `${summary.pct_healthy}<span class="kpi-unit">%</span>`;
+    document.getElementById('kpi-healthy-sub').textContent = `${sd.Healthy||0} elements currently healthy`;
+
+    // State Donut
+    const stateOrder = ['Healthy','Warning','Minor','Major','Failure'];
+    renderDonut('chartStateDonut',
+      stateOrder,
+      stateOrder.map(s => sd[s] || 0),
+      stateOrder.map(s => STATE_COLORS[s])
+    );
+
+    // Risk Donut
+    const riskOrder = ['CRITICAL','HIGH','MEDIUM','LOW','NORMAL'];
+    renderDonut('chartRiskDonut',
+      riskOrder,
+      riskOrder.map(r => rd[r] || 0),
+      riskOrder.map(r => RISK_COLORS[r])
+    );
+
+    // MC Validation
+    const mcAnalytical = mc.find(m => m.method && m.method.includes('Analytical'));
+    const mcMC = mc.find(m => m.method && m.method.includes('Monte Carlo'));
+    if (mcAnalytical && mcMC) {
+      const ap = mcAnalytical.failure_prob_168h;
+      const mp = mcMC.failure_prob_168h;
+      const accuracy = (100 - Math.abs(ap - mp) * 100).toFixed(1);
+      document.getElementById('mc-analytical').textContent = (ap * 100).toFixed(2) + '%';
+      document.getElementById('mc-simulation').textContent = (mp * 100).toFixed(2) + '%';
+      document.getElementById('mc-match').textContent = accuracy + '%';
+      document.getElementById('mc-mttf-val').textContent = mcAnalytical.mean_time_to_failure_hours
+        ? mcAnalytical.mean_time_to_failure_hours.toFixed(1) : '33.7';
+      document.getElementById('mc-ttf-val').textContent = mcMC.mean_time_to_failure_hours
+        ? mcMC.mean_time_to_failure_hours.toFixed(1) : '32.6';
+    }
+
+    // Failure curves
+    renderFailureCurves(curves);
+
+    // MTTF
+    renderMTTFCharts(mttf);
+
+    // Heatmaps
+    renderHeatmap('corrHeatmap', correlation.labels, correlation.matrix, corrColor, v => v.toFixed(2));
+    renderHeatmap('transHeatmap', transition.states, transition.matrix, transColor, v => (v*100).toFixed(0)+'%');
+
+    // Pre-fill the custom matrix grid with the live network's transition matrix
+    _defaultMatrixValues = transition.matrix;
+    buildMatrixGrid(transition.matrix);
+
+    // Summary tables
+    renderSummaryTable('typeSummary', summary.by_type, 'type', 'Type');
+    renderSummaryTable('regionSummary', summary.by_region, 'region', 'Region');
+
+    // Elements table
+    loadTable();
+
+  } catch (err) {
+    console.error('Init error:', err);
+  }
+}
+
+// =============================================================================
+// AI CHAT WIDGET
+// =============================================================================
+
+let chatOpen = false;
+let chatHistory = [];  // full conversation history sent to the API each turn
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chatPanel').style.display = chatOpen ? 'flex' : 'none';
+  if (chatOpen) document.getElementById('chatInput').focus();
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  const sendBtn = document.getElementById('chatSendBtn');
+  sendBtn.disabled = true;
+
+  addChatMsg('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  // Show typing indicator while waiting for AI
+  const typingId = addChatMsg('assistant', 'Thinking…', true);
+
+  try {
+    const res = await fetch(`${API}/ai/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: chatHistory }),
+    });
+
+    removeChatMsg(typingId);
+
+    if (!res.ok) {
+      const err = await res.json();
+      addChatMsg('assistant', `Error: ${err.detail || 'Could not reach AI service.'}`);
+      return;
+    }
+
+    const data = await res.json();
+    addChatMsg('assistant', data.reply);
+    chatHistory.push({ role: 'assistant', content: data.reply });
+  } catch {
+    removeChatMsg(typingId);
+    addChatMsg('assistant', 'Could not connect to the AI service. Please check the server.');
+  } finally {
+    sendBtn.disabled = false;
+    input.focus();
+  }
+}
+
+let _chatMsgCounter = 0;
+
+function addChatMsg(role, text, isTyping = false) {
+  const id  = `cmsg-${++_chatMsgCounter}`;
+  const div = document.createElement('div');
+  div.id        = id;
+  div.className = `chat-msg ${role}${isTyping ? ' typing' : ''}`;
+  div.textContent = text;
+  const container = document.getElementById('chatMessages');
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return id;
+}
+
+function removeChatMsg(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+
+// =============================================================================
+// CUSTOM MATRIX ANALYZER
+// =============================================================================
+
+const MATRIX_STATES  = ['Healthy', 'Warning', 'Minor', 'Major', 'Failure'];
+const CURVE_COLORS   = { Healthy: '#2ecc71', Warning: '#f39c12', Minor: '#e67e22', Major: '#e74c3c' };
+
+// Stored so we can reset the grid to network defaults
+let _defaultMatrixValues = null;
+
+function buildMatrixGrid(values) {
+  // values is a 5×5 array of numbers; pass null to use identity-style defaults
+  const table = document.getElementById('customMatrixTable');
+
+  // Header row with column labels
+  let html = '<thead><tr><th style="min-width:64px"></th>';
+  MATRIX_STATES.forEach(s => { html += `<th style="min-width:76px;padding:6px 4px">${s}</th>`; });
+  html += '<th style="min-width:60px">Sum</th></tr></thead><tbody>';
+
+  MATRIX_STATES.forEach((fromState, i) => {
+    html += `<tr><td class="matrix-row-label">${fromState}</td>`;
+    MATRIX_STATES.forEach((_, j) => {
+      const v = values ? values[i][j].toFixed(4) : (i === j ? '0.8000' : '0.0500');
+      html += `<td><input class="matrix-input" id="mx_${i}_${j}"
+               type="number" step="0.001" min="0" max="1" value="${v}"
+               oninput="onMatrixInput(${i})" /></td>`;
+    });
+    html += `<td><span class="row-sum-badge ok" id="rowsum_${i}">1.0000</span></td></tr>`;
+  });
+
+  html += '</tbody>';
+  table.innerHTML = html;
+  MATRIX_STATES.forEach((_, i) => updateRowSum(i));
+}
+
+function onMatrixInput(rowIdx) {
+  updateRowSum(rowIdx);
+}
+
+function updateRowSum(rowIdx) {
+  let sum = 0;
+  MATRIX_STATES.forEach((_, j) => {
+    sum += parseFloat(document.getElementById(`mx_${rowIdx}_${j}`).value) || 0;
+  });
+
+  const badge = document.getElementById(`rowsum_${rowIdx}`);
+  badge.textContent = sum.toFixed(4);
+  const ok = Math.abs(sum - 1.0) < 0.02;
+  badge.className = `row-sum-badge ${ok ? 'ok' : 'err'}`;
+
+  // Colour the row inputs to signal validity
+  MATRIX_STATES.forEach((_, j) => {
+    const inp = document.getElementById(`mx_${rowIdx}_${j}`);
+    inp.className = `matrix-input ${ok ? 'row-ok' : 'row-err'}`;
+  });
+}
+
+function resetToDefaultMatrix() {
+  if (_defaultMatrixValues) buildMatrixGrid(_defaultMatrixValues);
+}
+
+async function analyzeCustomMatrix() {
+  const matrix = MATRIX_STATES.map((_, i) =>
+    MATRIX_STATES.map((_, j) => parseFloat(document.getElementById(`mx_${i}_${j}`).value) || 0)
+  );
+
+  const btn = document.getElementById('analyzeMatrixBtn');
+  btn.disabled    = true;
+  btn.textContent = 'Analyzing…';
+
+  try {
+    const res = await fetch(`${API}/analyze/custom-matrix`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ states: MATRIX_STATES, matrix }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(`Validation error: ${err.detail}`);
+      return;
+    }
+
+    renderCustomMatrixResults(await res.json());
+  } catch (e) {
+    alert('Analysis failed: ' + e.message);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Analyze Matrix';
+  }
+}
+
+function renderCustomMatrixResults(data) {
+  document.getElementById('customMatrixResults').style.display = 'block';
+  document.getElementById('customMatrixResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Failure curves chart
+  const datasets = Object.entries(data.curves).map(([state, probs]) => ({
+    label: `From ${state}`,
+    data:  data.hours.map((h, i) => ({ x: h, y: probs[i] * 100 })),
+    borderColor: CURVE_COLORS[state] || '#00d4ff',
+    borderWidth: 2.5, fill: false, pointRadius: 0, tension: 0.4,
+  }));
+
+  makeChart('chartCustomCurves', {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { type: 'linear', min: 0, max: 168,
+             ticks: { color: '#7ab3d8', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' },
+             title: { display: true, text: 'Hours', color: '#7ab3d8', font: { size: 10 } } },
+        y: { min: 0, max: 100,
+             ticks: { color: '#7ab3d8', font: { size: 11 }, callback: v => v + '%' },
+             grid: { color: 'rgba(255,255,255,0.04)' } },
+      },
+      plugins: {
+        legend: { labels: { color: '#7ab3d8', font: { size: 11 } } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%` } },
+      },
+    },
+  });
+
+  // MTTF rows
+  document.getElementById('customMTTFTable').innerHTML =
+    Object.entries(data.mttf_hours).map(([state, h]) =>
+      `<div class="mini-table-row">
+         <span class="mini-table-label">${state}</span>
+         <span class="mini-table-val">${h != null ? h.toFixed(1) + 'h' : '—'}</span>
+       </div>`
+    ).join('');
+
+  // 24h prob rows
+  document.getElementById('custom24hProbs').innerHTML =
+    Object.entries(data.prob_fail_24h).map(([state, p]) =>
+      `<div class="mini-table-row">
+         <span class="mini-table-label">${state}</span>
+         <span class="mini-table-val" style="color:${probColor(p)}">${(p * 100).toFixed(1)}%</span>
+       </div>`
+    ).join('');
+}
+
+
+// =============================================================================
+// TELEMETRY CSV UPLOAD
+// =============================================================================
+
+let _pendingUploadFile = null;
+
+function handleFileSelected() {
+  const file = document.getElementById('csvFile').files[0];
+  if (file) {
+    _pendingUploadFile = file;
+    document.getElementById('uploadZoneText').textContent = `✓ ${file.name} selected`;
+  }
+}
+
+async function uploadTelemetry() {
+  if (!_pendingUploadFile) {
+    alert('Please select a CSV file first.');
+    return;
+  }
+
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled    = true;
+  btn.textContent = 'Analyzing…';
+
+  const form = new FormData();
+  form.append('file', _pendingUploadFile);
+
+  try {
+    const res = await fetch(`${API}/upload/telemetry`, { method: 'POST', body: form });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(`Upload error: ${err.detail}`);
+      return;
+    }
+
+    renderUploadResults(await res.json());
+  } catch (e) {
+    alert('Upload failed: ' + e.message);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Upload & Analyze';
+  }
+}
+
+function renderUploadResults(data) {
+  document.getElementById('uploadResults').style.display = 'block';
+  document.getElementById('uploadResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Stats
+  document.getElementById('upload-rows').textContent        = data.rows_processed.toLocaleString();
+  document.getElementById('upload-transitions').textContent = data.transitions_counted.toLocaleString();
+  document.getElementById('upload-elements').textContent    = data.unique_elements;
+  document.getElementById('upload-method').textContent      = 'MLE Estimated';
+
+  // Failure curves
+  const datasets = Object.entries(data.failure_curves).map(([state, probs]) => ({
+    label: `From ${state}`,
+    data:  data.hours.map((h, i) => ({ x: h, y: probs[i] * 100 })),
+    borderColor: CURVE_COLORS[state] || '#00d4ff',
+    borderWidth: 2.5, fill: false, pointRadius: 0, tension: 0.4,
+  }));
+
+  makeChart('chartUploadCurves', {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { type: 'linear', min: 0, max: 168,
+             ticks: { color: '#7ab3d8' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { min: 0, max: 100,
+             ticks: { color: '#7ab3d8', callback: v => v + '%' },
+             grid: { color: 'rgba(255,255,255,0.04)' } },
+      },
+      plugins: {
+        legend: { labels: { color: '#7ab3d8' } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%` } },
+      },
+    },
+  });
+
+  // Estimated transition matrix heatmap
+  const m = data.estimated_matrix;
+  renderHeatmap('uploadMatrixHeatmap', m.states, m.matrix, transColor, v => (v * 100).toFixed(0) + '%');
+
+  // MTTF rows
+  document.getElementById('uploadMTTFTable').innerHTML =
+    Object.entries(data.mttf_hours)
+      .filter(([, v]) => v !== null)
+      .map(([state, h]) =>
+        `<div class="mini-table-row">
+           <span class="mini-table-label">${state}</span>
+           <span class="mini-table-val">${h.toFixed(1)}h</span>
+         </div>`
+      ).join('');
+
+  // 24h prob rows
+  document.getElementById('upload24hProbs').innerHTML =
+    Object.entries(data.prob_fail_24h).map(([state, p]) =>
+      `<div class="mini-table-row">
+         <span class="mini-table-label">${state}</span>
+         <span class="mini-table-val" style="color:${probColor(p)}">${(p * 100).toFixed(1)}%</span>
+       </div>`
+    ).join('');
+}
+
+
+init();
+</script>
+</body>
+</html>
