@@ -10,6 +10,7 @@
 ![Azure OpenAI](https://img.shields.io/badge/Azure_OpenAI-GPT--4o--mini-0089D6?style=flat-square&logo=microsoftazure&logoColor=white)
 ![NumPy](https://img.shields.io/badge/NumPy-Markov_Chain-013243?style=flat-square&logo=numpy&logoColor=white)
 ![Chart.js](https://img.shields.io/badge/Chart.js-4.x-FF6384?style=flat-square&logo=chartdotjs&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
 ---
 
