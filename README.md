@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # 🔮 NetGuard AI
 ### Predictive Network Intelligence Platform
@@ -43,7 +43,7 @@ The result is a live dashboard that tells your NOC team **which device will fail
 
 **Predictive Analytics**
 - Per-device failure probability at 1h / 6h / 24h / 7-day horizons
-- Flags devices that *look healthy* but are statistically HIGH risk — the catches a human NOC would miss
+- Flags devices that *look healthy* but are statistically HIGH risk — catches what a human NOC would miss
 - MTTF (Mean Time to Failure) computed via absorbing Markov chain fundamental matrix `N = (I−Q)⁻¹`
 - Priority Action Board with urgency tiers: **DISPATCH NOW · ACT WITHIN 12H · SCHEDULE TODAY**
 
@@ -69,104 +69,14 @@ The result is a live dashboard that tells your NOC team **which device will fail
 
 ![NetGuard AI Architecture](architecture.png)
 
-### System Layers
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Browser / Client                           │
-│                    http://your-ip:3721                          │
-└───────────────────────────────┬─────────────────────────────────┘
-                                │ HTTP
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              FastAPI Application  ·  backend/main.py            │
-│                    CORS Middleware  ·  Port 3721                │
-├──────────────────┬──────────────────┬───────────────────────────┤
-│  analytics.py    │    ai.py         │    analysis.py            │
-│  ─────────────── │  ─────────────── │  ─────────────────────── │
-│  10 GET routes   │  POST            │  POST                     │
-│  Serves pre-     │  /api/ai/chat    │  /api/analyze/custom-     │
-│  computed data   │                  │  matrix                   │
-│  + dashboard     │  LLM chat with   │  /api/upload/telemetry    │
-│  HTML            │  live context    │  /api/sample-csv          │
-└────────┬─────────┴────────┬─────────┴──────────────┬────────────┘
-         │                  │                         │
-         ▼                  ▼                         ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              SERVICE LAYER  ·  backend/services/                │
-│                                                                 │
-│  ┌──────────────┐  ┌───────────────────┐  ┌─────────────────┐  │
-│  │   data.py    │  │    markov.py       │  │ ai_service.py   │  │
-│  │ ──────────── │  │ ───────────────── │  │ ─────────────── │  │
-│  │ Loads all    │  │ compute_failure_  │  │ AzureOpenAI     │  │
-│  │ CSVs once    │  │ curves()          │  │ client          │  │
-│  │ at startup   │  │                   │  │                 │  │
-│  │              │  │ compute_mttf()    │  │ build_network_  │  │
-│  │ Shared       │  │                   │  │ context()       │  │
-│  │ DataFrames   │  │ estimate_         │  │                 │  │
-│  │ + helpers    │  │ transition_       │  │ chat()          │  │
-│  │              │  │ matrix()          │  │                 │  │
-│  └──────┬───────┘  └───────────────────┘  └────────┬────────┘  │
-└─────────┼──────────────────────────────────────────┼────────────┘
-          │                                           │
-          ▼                                           ▼
-┌─────────────────────────┐           ┌───────────────────────────┐
-│  DATA  ·  data/          │           │  Azure OpenAI             │
-│                          │           │                           │
-│  results/                │           │  Model: GPT-4o-mini       │
-│  ├─ network_risk_        │           │                           │
-│  │  dashboard.csv        │           │  Network snapshot is      │
-│  ├─ element_mttf_        │           │  built fresh on every     │
-│  │  analysis.csv         │           │  request and injected     │
-│  ├─ estimated_           │           │  as the system prompt     │
-│  │  transition_matrix    │           │  so answers are always    │
-│  ├─ kpi_correlation_     │           │  grounded in real data    │
-│  │  matrix.csv           │           │                           │
-│  ├─ monte_carlo_         │           └───────────────────────────┘
-│  │  results.csv          │
-│  └─ failure_             │
-│     probabilities.csv    │
-│                          │
-│  raw/                    │
-│  ├─ failures.xlsx        │
-│  ├─ network_elements     │
-│  ├─ telemetry.xlsx       │
-│  └─ transition_profiles  │
-└─────────────────────────┘
-```
-
 ### Request Flow
 
-```
-Analytics (pre-computed data)
-  GET /api/summary
-    └─► analytics.py → data.py (read DataFrame) → return JSON → Chart.js renders
-
-AI Chat (live LLM)
-  POST /api/ai/chat
-    └─► ai.py → ai_service.build_network_context() → inject into system prompt
-              → ai_service.chat(messages) → Azure OpenAI → return reply
-
-Custom Matrix Analysis (on-the-fly math)
-  POST /api/analyze/custom-matrix
-    └─► analysis.py → markov.validate_matrix() → markov.compute_failure_curves()
-                    → markov.compute_mttf() → return curves + MTTF
-
-Telemetry Upload (train your own model)
-  POST /api/upload/telemetry
-    └─► analysis.py → parse CSV → markov.estimate_transition_matrix() (MLE)
-                    → compute_failure_curves() → compute_mttf() → return full analysis
-```
-
-### Schemas
-
-```
-backend/schemas/requests.py
-
-  ChatMessage      { role: str, content: str }
-  ChatRequest      { messages: List[ChatMessage] }
-  MatrixRequest    { states: List[str], matrix: List[List[float]] }
-```
+| Request type | Path |
+|---|---|
+| **Analytics** | `GET /api/*` → `analytics.py` → `data.py` (read DataFrame) → JSON → Chart.js |
+| **AI Chat** | `POST /api/ai/chat` → `ai.py` → `ai_service.build_network_context()` → Azure OpenAI → reply |
+| **Custom Matrix** | `POST /api/analyze/custom-matrix` → `markov.validate_matrix()` → `compute_failure_curves()` → `compute_mttf()` |
+| **Telemetry Upload** | `POST /api/upload/telemetry` → parse CSV → `estimate_transition_matrix()` → full analysis |
 
 ---
 
@@ -180,8 +90,9 @@ netguard-ai/
 ├── .env.example                  ← Key template — copy to .env
 ├── .gitignore
 ├── README.md
+├── architecture.png              ← System architecture diagram
 │
-├── backend/                      ← All Python source code
+├── backend/
 │   ├── main.py                   ← App factory: middleware + router wiring
 │   ├── config.py                 ← Single source of truth: env vars, paths, constants
 │   │
@@ -235,7 +146,7 @@ pip install -r requirements.txt
 
 # 4. Set up environment variables
 cp .env.example .env
-# Open .env and replace the placeholder values with your Azure OpenAI credentials
+# Edit .env and replace placeholder values with your Azure OpenAI credentials
 
 # 5. Start the server
 python run.py
@@ -303,7 +214,7 @@ POST /api/analyze/custom-matrix
 }
 ```
 
-**Rules:** Each row must sum to `1.0` (±0.02 tolerance). No negative values.
+Each row must sum to `1.0` (±0.02 tolerance). No negative values.
 
 **Returns:** Failure probability curves over 168h · MTTF per starting state · 24h and 7-day failure probabilities.
 
@@ -331,8 +242,7 @@ NE002,Healthy
 | `state` | ✅ Yes | One of: `Healthy` · `Warning` · `Minor` · `Major` · `Failure` |
 | `element_id` | Optional | If present, transitions are computed *within* each device — no bleed across boundaries |
 
-Download the template: `GET /api/sample-csv`
-
+Download the template: `GET /api/sample-csv`  
 Minimum recommended: **~50 state observations** for a stable matrix estimate.
 
 ---
@@ -362,7 +272,6 @@ Get these from: **Azure Portal → Azure OpenAI → Your Resource → Keys and E
 | Data handling | Pandas | CSV loading, groupby, filtering, pagination |
 | AI | Azure OpenAI GPT-4o-mini | Natural language Q&A with live network context |
 | Frontend | Vanilla JS + Chart.js 4 | No framework — single self-contained HTML file |
-| Charts | Chart.js · Custom HTML tables | Doughnut, line, bar, heatmaps |
 | Config | python-dotenv | `.env` loading at startup |
 | File upload | python-multipart | Multipart form parsing for CSV uploads |
 
@@ -398,4 +307,3 @@ The model is cross-validated against 5,000 Monte Carlo simulations — **99.8% m
 Built by **Zeeshan Parwez** · Powered by Markov Chain Theory & Azure OpenAI
 
 </div>
-]]>
