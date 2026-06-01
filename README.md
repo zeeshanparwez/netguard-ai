@@ -67,7 +67,11 @@ The result is a live dashboard that tells your NOC team **which device will fail
 
 ## Architecture
 
+<div align="center">
+
 ![NetGuard AI Architecture](architecture.png)
+
+</div>
 
 ### Request Flow
 
